@@ -2,6 +2,8 @@
 
 WebAgent 是一个专为网页端大模型（DeepSeek、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
 
+本项目由 [LINUX DO](https://linux.do) 社区认可。
+
 ## 📦 安装使用指南
 
 1. 下载或克隆本项目到本地；
