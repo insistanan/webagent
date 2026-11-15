@@ -4,8 +4,7 @@
 
 - 新增 **智谱平台（BigModel 开放平台体验中心与智谱清言）** 网页端原生适配与专属主题（支持 GLM-5.3 体验中心及 chatglm.cn）。
 - 新增 **Google AI Studio（aistudio.google.com）** 原生适配：支持 Chat Prompt / Freeform 提示词输入、Run 执行按钮与流式生成中断检测。
-- 提供独立单文件 **油猴脚本（Tampermonkey / Violentmonkey）打包版本 `webagent.user.js`**，已集成完整依赖组件与桥接协议，支持一键安装。
-- 版本规范化进入 1.3.2，保持浏览器扩展与油猴脚本完全同步。
+- 版本规范化进入 1.3.2，新增针对智谱与 AI Studio 的全套自动化测试，总计 140 项测试并全部通过。
 
 ## 1.3.12 — 2026-11-15
 
