@@ -69,14 +69,25 @@ test('tool aliases, args and flat arguments are compatible',()=>{
   for(const key of ['tool','tool_name','function'])assert.deepEqual(parser.inspect(JSON.stringify({[key]:'file_read',args:{path:'a'}})).call,{tool:'file_read',args:{path:'a'}});
   assert.deepEqual(parser.inspect('{"tool":"file_read","path":"a"}').call,{tool:'file_read',args:{path:'a'}});
 });
-function contentParser(){
-  const source=fs.readFileSync(require.resolve('../content.js'),'utf8');
+function contentParser(source=fs.readFileSync(require.resolve('../content.js'),'utf8')){
+  // Git may check out CRLF on Windows; fixture extraction must accept both.
+  source=source.replace(/\r\n/g,'\n');
   const start=source.indexOf('  let lastToolParseStatus');
   const end=source.indexOf('  // =========================================================================\n  // 8.5 ',start);
+  assert.ok(start>=0 && end>start,'content parser fixture boundaries must exist');
   const context={WebAgentToolJson:parser,isLikelyValidTool:()=>false};
   vm.runInNewContext(source.slice(start,end)+'\nglobalThis.parse=parseToolCallFromReply;globalThis.status=()=>lastToolParseStatus;',context);
   return context;
 }
+test('content parser extraction supports both LF and Windows CRLF checkouts',()=>{
+  const source=fs.readFileSync(require.resolve('../content.js'),'utf8').replace(/\r\n/g,'\n');
+  for(const fixture of [source,source.replace(/\n/g,'\r\n')]) {
+    const p=contentParser(fixture);
+    const raw=JSON.stringify(make('first\nlast'));
+    assert.equal(p.parse(raw,null).args.content,'first\nlast');
+    assert.equal(p.status().status,'parsed');
+  }
+});
 test('Gemini DOM code extraction parses full malformed multiline file_create',()=>{
   const p=contentParser(),content=('div { x }\n'.repeat(2500));
   const block={matches:()=>true,textContent:invalidMultiline(content),closest:()=>null};

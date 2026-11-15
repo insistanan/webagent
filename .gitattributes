@@ -1,0 +1,3 @@
+# Keep source checkouts consistent across Linux and Windows.
+* text=auto eol=lf
+*.png -text
