@@ -11,7 +11,7 @@
       <div class="logo-icon">🚀</div>
       <div class="logo-info">
         <h3>WebAgent</h3>
-        <span class="version">v1.3.1 (Web AI MCP Bridge)</span>
+        <span class="version">v1.3.11 (Nexus 本地适配)</span>
       </div>
     </div>
     <div class="status-badge" id="bridgeStatusBadge">检测中...</div>
@@ -19,8 +19,10 @@
 
   <div class="card">
     <div class="card-title">🌐 本地服务状态</div>
+    <p id="pageVersionStatus" aria-live="polite">正在检查当前网页版本...</p>
+    <button id="reloadPageBtn" class="btn btn-secondary" disabled>保存草稿后刷新当前 AI 网页</button>
     <div class="stat-row">
-      <span>WebAgent Bridge (18080)</span>
+      <span>Nexus MCP</span>
       <span class="badge" id="mcpBridgeStatus">--</span>
     </div>
   </div>
@@ -33,18 +35,18 @@
         <p>检测到 AI 输出工具代码块时自动调度</p>
       </div>
       <label class="switch">
-        <input type="checkbox" id="autoExecuteToggle" checked>
+        <input type="checkbox" id="autoExecuteToggle">
         <span class="slider"></span>
       </label>
     </div>
 
     <div class="setting-item">
       <div class="setting-label">
-        <strong>自动遭遇限流冷却重试</strong>
-        <p>网页模型遇到速率限制时自动冷却并重发</p>
+        <strong>自动发送工具结果</strong>
+        <p>关闭：仅回填；开启：自动提交结果和发送栏已有草稿</p>
       </div>
       <label class="switch">
-        <input type="checkbox" id="autoRetryToggle" checked>
+        <input type="checkbox" id="autoSendToggle">
         <span class="slider"></span>
       </label>
     </div>
@@ -64,10 +66,32 @@
   <div class="card">
     <div class="card-title">📁 工作区与路径配置</div>
     <div class="input-group">
-      <label>默认工作目录 (支持全盘任意路径):</label>
+      <label>已在 Nexus 授权的项目目录：</label>
       <input type="text" id="workspacePathInput" placeholder="例如: C:/workspace (留空需每次自行指定)">
     </div>
       </div>
+
+  <div class="card">
+    <div class="card-title">🔌 Nexus MCP 连接</div>
+    <div class="input-group"><label>MCP 服务基址（不含 /mcp）：</label><input id="bridgeUrlInput" type="text" placeholder="http://127.0.0.1:8787"></div>
+    <div class="input-group"><label>项目 ID（来自 Nexus 项目管理）：</label><input id="projectIdInput" type="text"></div>
+    <div class="input-group"><label>Bridge Token（本地直连可留空，不是 DeepSeek API Key）：</label><input id="bridgeTokenInput" type="password" autocomplete="off"></div>
+    <p id="projectAccessStatus" aria-live="polite">项目权限未查询</p>
+    <p id="configNotice" aria-live="polite">自动执行和自动发送独立选择；开关保存后生效。</p>
+    <button id="checkConnectionBtn" class="btn btn-secondary">检测 MCP 握手</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔐 当前项目权限（仅本地用户）</div>
+    <div class="input-group"><label>Nexus 管理令牌（不是 Bridge Token）：</label><input id="managementTokenInput" type="password" autocomplete="off" placeholder="在 Nexus 本地管理设置中获取"></div>
+    <div class="input-group"><label for="managementTokenFile">也可选择本机管理令牌文件导入：</label><input id="managementTokenFile" type="file" accept=".key,.txt"></div>
+    <p>仅保存于扩展内部，不提供给 Gemini。开启命令仅使用 Nexus 的项目执行模式，不关闭其审批或安全策略。</p>
+    <div class="input-group"><label for="projectAccessSelect">项目文件权限：</label><select id="projectAccessSelect"><option value="read-only">只读</option><option value="read-write">可读写</option></select></div>
+    <button id="applyAccessBtn" class="btn btn-secondary">应用文件权限</button>
+    <div class="input-group"><label for="projectExecutionSelect">项目命令执行：</label><select id="projectExecutionSelect"><option value="disabled">关闭</option><option value="project-code">开启（项目代码执行）</option></select></div>
+    <button id="applyExecutionBtn" class="btn btn-secondary">应用命令权限</button>
+    <p id="permissionNotice" aria-live="polite">切为只读会关闭命令；开启命令会设为可读写。项目命令并非操作系统级沙箱，仍需核对每次调用。</p>
+  </div>
 
   <div class="actions">
     <button id="injectPromptBtn" class="btn btn-primary">📋 复制增强协作协议</button>
@@ -75,9 +99,12 @@
   </div>
 
   <div class="footer">
-    <span>💡 提示：在 DeepSeek / ChatGPT / Duck.ai 等页面顶部已自动浮动药丸面板</span>
+    <span>💡 提示：在 DeepSeek / Gemini / ChatGPT 等页面顶部已自动浮动药丸面板</span>
   </div>
 
+  <script src="mcp-client.js"></script>
+  <script src="project-status.js"></script>
+  <script src="auto-send.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

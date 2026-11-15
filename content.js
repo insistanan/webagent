@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name         WebAgent 1.3.1 (Web AI MCP Bridge)
+// @name         WebAgent 1.3.11 (Web AI MCP Bridge)
 // @namespace    https://github.com/ysunyang4/webagent
-// @version      1.3.1
-// @description  WebAgent 1.3.1 专用油猴脚本，无缝将 DeepSeek / ChatGPT / Kimi / 豆包 / 通义千问 (Qwen) / Duck.ai / Dola 网页端连接至本地 WebAgent (127.0.0.1:18080 / :8787)。原生支持标准 MCP 工具调用、全盘文件读写、终端命令行执行、Android 自动化及多大模型自愈调度。
+// @version      1.3.11
+// @description  WebAgent 1.3.11 本地扩展适配：DeepSeek / Gemini 等网页连接 Nexus MCP，文件与命令遵守项目权限，自动执行和自动发送由用户独立选择。
 // @author       WebAgent Core
+// @match        https://gemini.google.com/*
 // @match        https://chat.deepseek.com/*
 // @match        https://*.deepseek.com/*
 // @match        https://chatgpt.com/*
@@ -46,7 +47,7 @@
 // @run-at       document-idle
 // ==/UserScript==
 
-(function () {
+(async function () {
   "use strict";
 
   // Prevent multiple injections / duplicate timer intervals from freezing the tab or iframes
@@ -60,45 +61,74 @@
     window.__WEBAGENT_1_3_1_LOADED__ = true;
   }
 
+  // Extension reload does not replace a content script already running in a tab.
+  const extensionContextAtLoad = typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
+  let extensionContextInvalid = false;
+  function extensionContextAlive() {
+    if(!extensionContextAtLoad)return true;
+    try{return Boolean(chrome.runtime.id);}catch{return false;}
+  }
+  function showExtensionRefreshNeeded(error) {
+    const message=error?.message||String(error||'');
+    if(extensionContextAlive() && !/Extension context invalidated|Receiving end does not exist/i.test(message))return false;
+    extensionContextInvalid=true;
+    const root=document.querySelector('#nexus-agent-root');
+    if(root){
+      const text=root.querySelector('.nexus-pill-text');
+      if(text)text.textContent='WebAgent 已更新，请刷新网页';
+      root.title='扩展已重新加载，当前页面脚本失效。保存草稿后刷新 Gemini / DeepSeek；无需重启 Nexus。';
+      const status=root.querySelector('#nexus-status-bar');
+      if(status)status.textContent='当前页面脚本已失效，请保存草稿并刷新网页';
+    }
+    return true;
+  }
+
   // =========================================================================
   // 0. Universal GM API & Tauri Host IPC Polyfill for Non-Extension / WebView2 Environments
   // =========================================================================
   if (typeof window !== "undefined") {
-    if (typeof window.GM_setValue === "undefined") {
-      window.GM_setValue = (k, v) => {
-        try { localStorage.setItem('__gm_' + k, typeof v === 'string' ? v : JSON.stringify(v)); } catch(e) {}
-        if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
-          try { chrome.storage.local.set({ [k]: v }); } catch(e) {}
-        }
+    const extensionStorage = typeof chrome !== 'undefined' && chrome.storage?.local && chrome.runtime?.id;
+    const extensionValues = extensionStorage ? Object.fromEntries(Object.entries(await chrome.storage.local.get(null)).filter(([key]) => !['webagent_management_token','webagent_lb_token','nexus_lb_token'].includes(key))) : null;
+    if (extensionStorage) {
+      // Old versions copied extension credentials into site-readable localStorage.
+      for (const key of ['webagent_lb_token', 'nexus_lb_token', 'webagent_management_token']) {
+        try { localStorage.removeItem('__gm_' + key); } catch {}
+      }
+      window.GM_setValue = (key, value) => {
+        if (key === 'webagent_management_token') return;
+        extensionValues[key] = value;
+        chrome.storage.local.set({[key]: value});
       };
-    }
-    if (typeof window.GM_getValue === "undefined") {
-      window.GM_getValue = (k, d) => {
-        try {
-          const v = localStorage.getItem('__gm_' + k);
-          if (v === null || v === undefined) return d;
-          try { return JSON.parse(v); } catch(_) { return v; }
-        } catch(e) { return d; }
+      window.GM_getValue = (key, fallback) => {
+        if (key === 'webagent_lb_token' || key === 'nexus_lb_token' || key === 'webagent_management_token') return '';
+        return Object.hasOwn(extensionValues, key) ? extensionValues[key] : fallback;
       };
-    }
-    if (typeof window.GM_setClipboard === "undefined") {
-      window.GM_setClipboard = (t) => { try { navigator.clipboard.writeText(t); } catch(e) {} };
-    }
-    // 自动与 chrome.storage.local 同步
-    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
-      try {
-        chrome.storage.local.get(null, (items) => {
-          if (items) {
-            for (const [k, v] of Object.entries(items)) {
-              try {
-                if (localStorage.getItem('__gm_' + k) === null) {
-                  localStorage.setItem('__gm_' + k, typeof v === 'string' ? v : JSON.stringify(v));
-                }
-              } catch(e) {}
-            }
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') return;
+        const fields = {webagent_bridge_url: 'nexusUrl', webagent_workspace_dir: 'workspace',
+          webagent_project_id: 'projectId', webagent_auto_execute: 'autoExecute', webagent_auto_send: 'autoSend',
+          webagent_auto_retry_rate_limit: 'autoRetry', webagent_review_safe_mode: 'reviewSafeMode'};
+        for (const [key, change] of Object.entries(changes)) {
+          if (['webagent_management_token','webagent_lb_token','nexus_lb_token'].includes(key)) continue;
+          extensionValues[key] = change.newValue;
+          if (fields[key] && typeof CONFIG !== 'undefined') {
+            CONFIG[fields[key]] = change.newValue;
+            const id={webagent_auto_execute:'nexus-cfg-auto',webagent_auto_send:'nexus-cfg-send'}[key];
+            if(id){const control=document.querySelector('#nexus-agent-root #'+id);if(control)control.checked=Boolean(change.newValue);}
           }
-        });
-      } catch(e) {}
+        }
+      });
+    } else {
+      if (typeof window.GM_setValue === 'undefined') window.GM_setValue = (key, value) => {
+        try { localStorage.setItem('__gm_' + key, JSON.stringify(value)); } catch {}
+      };
+      if (typeof window.GM_getValue === 'undefined') window.GM_getValue = (key, fallback) => {
+        try { const value = localStorage.getItem('__gm_' + key); return value == null ? fallback : JSON.parse(value); }
+        catch { return fallback; }
+      };
+    }
+    if (typeof window.GM_setClipboard === 'undefined') {
+      window.GM_setClipboard = text => navigator.clipboard.writeText(text).catch(() => {});
     }
 
     if (typeof window.GM_xmlhttpRequest === "undefined" || (typeof chrome !== "undefined" && chrome.runtime && typeof chrome.runtime.sendMessage === "function") || (window.__TAURI_INTERNALS__ && typeof window.__TAURI_INTERNALS__.invoke === "function")) {
@@ -121,25 +151,8 @@
             }, function(res) {
               if (chrome.runtime.lastError || !res || res.success === false) {
                 const errMsg = chrome.runtime.lastError ? chrome.runtime.lastError.message : (res && res.error ? res.error : "Extension proxy error");
-                if (origXhr) {
-                  origXhr(opts);
-                } else {
-                  fetch(opts.url, { method: method, headers: headers, body: body, mode: 'cors' })
-                    .then(async r => {
-                      const text = await r.text();
-                      if (opts.onload) {
-                        opts.onload({
-                          status: r.status,
-                          statusText: r.statusText,
-                          responseText: text,
-                          response: text
-                        });
-                      }
-                    })
-                    .catch(err => {
-                      if (opts.onerror) opts.onerror(new Error(errMsg + " | " + err.message));
-                    });
-                }
+                showExtensionRefreshNeeded(new Error(errMsg));
+                if (opts.onerror) opts.onerror(new Error(errMsg));
                 return;
               }
               if (opts.onload) {
@@ -153,7 +166,9 @@
             });
             return;
           } catch(e) {
-            // fallback
+            showExtensionRefreshNeeded(e);
+            if (opts.onerror) opts.onerror(e);
+            return;
           }
         }
 
@@ -219,6 +234,7 @@
   function detectPlatform() {
     const host = (window.location.hostname || "").toLowerCase();
     const href = (window.location.href || "").toLowerCase();
+    if (host === "gemini.google.com") return "gemini";
     if (host.includes("chatgpt") || host.includes("openai") || href.includes("chatgpt.com") || href.includes("openai.com")) return "chatgpt";
     if (host.includes("deepseek") || href.includes("deepseek.com")) return "deepseek";
     if (host.includes("kimi") || host.includes("moonshot") || href.includes("kimi.ai") || href.includes("kimi.moonshot.cn") || href.includes("kimi.com")) return "kimi";
@@ -233,9 +249,16 @@
   if (PLATFORM === "unknown") return;
 
   const THEMES = {
+    gemini: {
+      name: 'Gemini', badgeTitle: 'Gemini × WebAgent 1.3.11', icon: '✦',
+      primaryColor: '#4285F4', primaryHover: '#3367D6', primaryRgb: '66, 133, 244',
+      borderRadius: '14px', pillRadius: '24px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      defaultPosition: {bottom: '84px', right: '28px'}
+    },
     chatgpt: {
       name: "ChatGPT",
-      badgeTitle: "ChatGPT × WebAgent 1.3.1",
+      badgeTitle: "ChatGPT × WebAgent 1.3.11",
       icon: "🎨",
       primaryColor: "#10A37F",
       primaryHover: "#0E8C6D",
@@ -247,7 +270,7 @@
     },
     deepseek: {
       name: "DeepSeek",
-      badgeTitle: "DeepSeek × WebAgent 1.3.1",
+      badgeTitle: "DeepSeek × WebAgent 1.3.11",
       icon: "🐳",
       primaryColor: "#4D6BFE",
       primaryHover: "#3B58E8",
@@ -259,7 +282,7 @@
     },
     kimi: {
       name: "Kimi",
-      badgeTitle: "Kimi × WebAgent 1.3.1",
+      badgeTitle: "Kimi × WebAgent 1.3.11",
       icon: "🌙",
       primaryColor: "#8B5CF6",
       primaryHover: "#7C3AED",
@@ -271,7 +294,7 @@
     },
     doubao: {
       name: "豆包",
-      badgeTitle: "豆包 × WebAgent 1.3.1",
+      badgeTitle: "豆包 × WebAgent 1.3.11",
       icon: "👧🏻",
       primaryColor: "#3370FF",
       primaryHover: "#1E5AF5",
@@ -283,7 +306,7 @@
     },
     duckai: {
       name: "Duck.ai",
-      badgeTitle: "Duck.ai × WebAgent 1.3.1",
+      badgeTitle: "Duck.ai × WebAgent 1.3.11",
       icon: "🦆",
       primaryColor: "#DE5833",
       primaryHover: "#C84B29",
@@ -295,7 +318,7 @@
     },
     qwen: {
       name: "通义千问",
-      badgeTitle: "Qwen × WebAgent 1.3.1",
+      badgeTitle: "Qwen × WebAgent 1.3.11",
       icon: "🟣",
       primaryColor: "#615CED",
       primaryHover: "#4F46E5",
@@ -307,7 +330,7 @@
     },
     dola: {
       name: "Dola",
-      badgeTitle: "Dola × WebAgent 1.3.1",
+      badgeTitle: "Dola × WebAgent 1.3.11",
       icon: "🌸",
       primaryColor: "#059669",
       primaryHover: "#047857",
@@ -613,14 +636,15 @@
   const DEFAULT_WORKSPACE = "";
 
   const CONFIG = {
-    nexusUrl: GM_getValue("webagent_bridge_url", GM_getValue("nexus_bridge_url", "http://127.0.0.1:18080")),
+    nexusUrl: GM_getValue("webagent_bridge_url", GM_getValue("nexus_bridge_url", "http://127.0.0.1:8787")),
     token: GM_getValue("webagent_lb_token", GM_getValue("nexus_lb_token", DEFAULT_BRIDGE_TOKEN)),
     workspace: GM_getValue("webagent_workspace_dir", GM_getValue("nexus_workspace_dir", "")),
     projectId: GM_getValue("webagent_project_id", GM_getValue("nexus_project_id", "")),
     autoExecute: GM_getValue("webagent_auto_execute", false),
+    autoSend: GM_getValue("webagent_auto_send", false),
     maxConsecutiveSteps: GM_getValue("webagent_max_consecutive_steps", 4),
     sendDelay: GM_getValue("webagent_send_delay", 3.0),
-    autoRetry: GM_getValue("webagent_auto_retry_rate_limit", true),
+    autoRetry: GM_getValue("webagent_auto_retry_rate_limit", false),
     themeMode: GM_getValue("webagent_theme_mode", "auto"), // "auto" | "light" | "dark"
     vaultPath: GM_getValue("webagent_vault_path", GM_getValue("nexus_vault_path", "")),
     reviewSafeMode: GM_getValue("webagent_review_safe_mode", true),
@@ -652,6 +676,7 @@
   // 3. 平台专用 DOM 选择器与输入模拟适配层
   // =========================================================================
   const ADAPTERS = {
+    gemini: globalThis.WebAgentGeminiAdapter,
     chatgpt: {
       getInput: () => document.querySelector("#prompt-textarea, div[contenteditable='true']#prompt-textarea, textarea[data-id='root'], textarea"),
       setValue: (el, val) => {
@@ -740,13 +765,9 @@
         if (!last) return "";
         try {
           const clone = last.cloneNode(true);
-          const thinkEls = clone.querySelectorAll("[class*='think'], [class*='reasoning'], details, .ds-think-content");
+          const thinkEls = clone.querySelectorAll("[class*='think'], [class*='thought'], [class*='reasoning'], model-thoughts, details, .ds-think-content");
           thinkEls.forEach(el => el.remove());
           const cleanText = clone.textContent?.replace(/<think>[\s\S]*?<\/think>/gi, "").trim() || "";
-          // 容错兜底：若剥除思考区后正文为空，但思考区里输出了 ```nexus 或 "tool" 代码块，直接返回原始全文触发执行
-          if (!cleanText && (last.textContent.includes('"tool"') || last.textContent.includes("```"))) {
-            return last.textContent.trim();
-          }
           return cleanText;
         } catch {
           return (last.textContent || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
@@ -2093,26 +2114,28 @@
   }
 
   function fetchMcpTools(callback) {
-    const token = CONFIG.token || DEFAULT_BRIDGE_TOKEN;
+    function failed() {
+      isConnected = false;
+      cachedMcpTools = [];
+      updateStatusUI('offline', CURRENT_THEME.badgeTitle + ' (MCP 未连接)');
+      updatePanelPingUI(false);
+      if (callback) callback([]);
+    }
     GM_xmlhttpRequest({
-      method: "POST",
-      url: `${CONFIG.nexusUrl}/mcp`,
-      headers: Object.assign({
-        "Content-Type": "application/json",
-        "MCP-Protocol-Version": "2024-11-05",
-      }, token ? { "Authorization": `Bearer ${token}` } : {}),
-      data: JSON.stringify({ jsonrpc: "2.0", id: Date.now(), method: "tools/list", params: {} }),
+      method: 'POST', url: CONFIG.nexusUrl.replace(/\/+$/, '') + '/mcp',
+      headers: {'Content-Type': 'application/json', 'MCP-Protocol-Version': '2024-11-05'},
+      data: JSON.stringify({jsonrpc: '2.0', id: Date.now(), method: 'tools/list', params: {}}),
       timeout: 5000,
-      onload: (res) => {
+      onload(res) {
         try {
-          const resp = JSON.parse(res.responseText);
-          if (resp.result?.tools) {
-            cachedMcpTools = resp.result.tools;
-            renderMcpToolsList(cachedMcpTools);
-            if (callback) callback(cachedMcpTools);
-          }
-        } catch {}
+          const rpc = JSON.parse(res.responseText);
+          if (res.status >= 400 || !Array.isArray(rpc.result?.tools)) return failed();
+          cachedMcpTools = rpc.result.tools;
+          renderMcpToolsList(cachedMcpTools);
+          if (callback) callback(cachedMcpTools);
+        } catch { failed(); }
       },
+      onerror: failed, ontimeout: failed
     });
   }
 
@@ -2189,7 +2212,7 @@
 
     // 智能参数自适应归一化 (兼容 AI 传来的 keyword/q/args 等变体)
     if (args && typeof args === "object") {
-      if (args.args && typeof args.args === "object") {
+      if (args.args && typeof args.args === "object" && !Array.isArray(args.args)) {
         args = { ...args.args, ...args };
         delete args.args;
       }
@@ -2270,131 +2293,34 @@
       return;
     }
 
-    // 1. 常用文件与命令行极速通道 (70ms 零权限阻碍)
-    if (cleanTool === "file_read" || cleanTool === "read") {
-      const targetPath = resolveWorkspacePath(args.path || args.file || args.filepath || args.filename);
-      mcpArgs = {
-        runtime: "node",
-        script: `
-          const fs = require('fs');
-          function smartDecode(buf) {
-            if (!buf) return '';
-            if (typeof buf === 'string') return buf.replace(/\0/g, '');
-            if (buf.length >= 2 && ((buf[0] === 0xFF && buf[1] === 0xFE) || (buf[1] === 0 && buf[3] === 0))) {
-              try {
-                return new TextDecoder('utf-16le').decode(buf).replace(/\0/g, '');
-              } catch (_) {}
-            }
-            try {
-              return new TextDecoder('utf-8', { fatal: true }).decode(buf).replace(/\0/g, '');
-            } catch (e) {
-              try {
-                return new TextDecoder('gbk').decode(buf).replace(/\0/g, '');
-              } catch (e2) {
-                return buf.toString().replace(/\0/g, '');
-              }
-            }
-          }
-          const p = ${JSON.stringify(targetPath)};
-          if (!fs.existsSync(p)) {
-            console.error('ERROR: 文件不存在 -> ' + p);
-            process.exit(1);
-          }
-          const content = smartDecode(fs.readFileSync(p));
-          let finalContent = content;
-          if (finalContent.length > 4000) {
-            finalContent = finalContent.slice(0, 2500) + "\\n\\n... [⚠️ 文件内容较长 (共 " + finalContent.length + " 字符)，已自动智能精简中间部分，建议按行或按模块读取] ...\\n\\n" + finalContent.slice(-1000);
-          }
-          console.log(finalContent);
-        `,
-      };
-    } else if (cleanTool === "file_write" || cleanTool === "write") {
-      const targetPath = resolveWorkspacePath(args.path);
-      const content = args.content ?? args.text ?? "";
-      mcpArgs = {
-        runtime: "node",
-        script: `
-          const fs = require('fs');
-          const path = require('path');
-          const p = ${JSON.stringify(targetPath)};
-          const dir = path.dirname(p);
-          if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-          fs.writeFileSync(p, ${JSON.stringify(content)}, 'utf8');
-          console.log('SUCCESS: 文件写入成功 -> ' + p + ' (' + Buffer.byteLength(${JSON.stringify(content)}) + ' 字节)');
-        `,
-      };
-    } else if (cleanTool === "file_list" || cleanTool === "list" || cleanTool === "ls" || cleanTool === "dir") {
-      const targetPath = resolveWorkspacePath(args.path || args.dir || args.directory || args.folder || ".");
-      mcpArgs = {
-        runtime: "node",
-        script: `
-          const fs = require('fs');
-          const path = require('path');
-          const p = ${JSON.stringify(targetPath)};
-          if (!fs.existsSync(p)) {
-            console.error('ERROR: 目录不存在 -> ' + p);
-            process.exit(1);
-          }
-          const entries = fs.readdirSync(p, { withFileTypes: true });
-          const list = entries.map(e => (e.isDirectory() ? '[DIR]  ' : '[FILE] ') + e.name);
-          console.log(list.join('\\n'));
-        `,
-      };
+    // 1. 常用文件与命令：遵守 Nexus 受管项目权限与执行策略
+    const scopedTools = new Set(['nexus_project_list', 'nexus_project_info', 'nexus_directory_list',
+      'nexus_file_read', 'nexus_file_create', 'nexus_file_write', 'nexus_git_status', 'nexus_runtime_list']);
+    const fileAliases = {file_read: 'nexus_file_read', read: 'nexus_file_read',
+      file_write: 'nexus_file_write', write: 'nexus_file_write', file_create: 'nexus_file_create',
+      file_list: 'nexus_directory_list', list: 'nexus_directory_list', ls: 'nexus_directory_list', dir: 'nexus_directory_list'};
+    if (scopedTools.has(toolName) || fileAliases[cleanTool]) {
+      // Legacy project tools are accepted directly even when tools/list exposes only meta-tools.
+      // Wrapping nexus_* aliases in nexus_execute_action is NOT supported by this release.
+      mcpToolName = scopedTools.has(toolName) ? toolName : fileAliases[cleanTool];
+      mcpArgs = {...args};
+      if (!['nexus_project_list', 'nexus_runtime_list'].includes(mcpToolName) && !mcpArgs.projectId) {
+        mcpArgs.projectId = CONFIG.projectId;
+      }
+      if (fileAliases[cleanTool]) {
+        mcpArgs.path = args.path || args.file || args.dir || args.directory || '.';
+        if (mcpToolName === 'nexus_file_read') mcpArgs.maxLines = Math.min(200, args.maxLines || args.limit || 200);
+        if (['nexus_file_write', 'nexus_file_create'].includes(mcpToolName)) mcpArgs.content = args.content ?? args.text ?? '';
+      }
     } else if (cleanTool === "command_run" || cleanTool === "powershell" || cleanTool === "cmd" || cleanTool === "exec") {
-      const cmd = args.command || args.cmd || args.exec || args.script || args.code || "";
-      const wsDir = resolveWorkspacePath(args.cwd || ".");
-      mcpArgs = {
-        runtime: "node",
-        script: `
-          const { execSync, spawn } = require('child_process');
-          function smartDecode(buf) {
-            if (!buf) return '';
-            if (typeof buf === 'string') return buf.replace(/\0/g, '');
-            if (buf.length >= 2 && ((buf[0] === 0xFF && buf[1] === 0xFE) || (buf[1] === 0 && buf[3] === 0))) {
-              try {
-                return new TextDecoder('utf-16le').decode(buf).replace(/\0/g, '');
-              } catch (_) {}
-            }
-            try {
-              return new TextDecoder('utf-8', { fatal: true }).decode(buf).replace(/\0/g, '');
-            } catch (e) {
-              try {
-                return new TextDecoder('gbk').decode(buf).replace(/\0/g, '');
-              } catch (e2) {
-                return buf.toString().replace(/\0/g, '');
-              }
-            }
-          }
-          try {
-            const rawCmd = ${JSON.stringify(cmd)}.trim();
-            const isPowerShell = /^\\s*(Start-Process|Get-|Set-|New-|powershell|\$)/i.test(rawCmd);
-            const isStart = /^\\s*(cmd\\s*\\/c\\s*)?start\\s+/i.test(rawCmd);
-            let out;
-            if (isStart) {
-              spawn(rawCmd, { shell: true, detached: true, stdio: 'ignore' }).unref();
-              console.log("SUCCESS: 进程已在桌面成功启动 -> " + rawCmd);
-              process.exit(0);
-            } else if (isPowerShell) {
-              out = execSync(rawCmd, { shell: 'powershell.exe', encoding: 'buffer', timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
-            } else {
-              out = execSync(rawCmd, { encoding: 'buffer', timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
-            }
-            let outStr = smartDecode(out);
-            if (outStr.length > 3500) {
-              outStr = outStr.slice(0, 2200) + "\\n\\n... [⚠️ 控制台输出日志较长 (共 " + outStr.length + " 字符)，已截断中间日志以防超出上下文] ...\\n\\n" + outStr.slice(-1000);
-            }
-            if (isPowerShell && /^\s*Start-Process/i.test(rawCmd)) {
-              if (!outStr) outStr = "SUCCESS: 进程已在桌面成功启动 -> " + rawCmd;
-            }
-            console.log(outStr || "SUCCESS: 命令执行完毕（无标准输出）");
-          } catch (e) {
-            const errBuf = (e.stderr && e.stderr.length) ? e.stderr : (e.stdout && e.stdout.length ? e.stdout : null);
-            const errMsg = errBuf ? smartDecode(errBuf) : (e.message || String(e));
-            console.error(errMsg);
-            process.exit(1);
-          }
-        `,
-      };
+      try {
+        const request=WebAgentCommandRequest.build(toolName,args,CONFIG);
+        mcpToolName=request.name; mcpArgs=request.arguments;
+      } catch(error) {
+        isExecuting=false;
+        updateStatusUI(isConnected?'online':'offline',CURRENT_THEME.badgeTitle);
+        callback({ok:false,error:error.message});return;
+      }
     } else if (
       cleanTool.startsWith("android_") ||
       cleanTool.startsWith("nex_mobile_") ||
@@ -2712,23 +2638,32 @@
   }
 
   // =========================================================================
-  // 6. 专属定制防拒答与全功能 MCP 提示词生成器 (彻底规避“提示注入/社工”拒答)
+  // 6. 基于真实工具与逐次授权的协作提示词
   // =========================================================================
   function getCustomAgentPrompt() {
-    const workspace = (CONFIG.workspace || "").trim();
     const fence = String.fromCharCode(96).repeat(3);
     return [
-      "请根据我的请求调用 Nexus / WebAgent 中实际可用的 MCP 工具。",
-      "执行前确认已连接工具并获得必要权限；不得编造执行结果。",
-      "删除文件、修改系统设置、执行敏感命令等操作，应先得到我的明确授权。",
-      "不要忽略任何正常的安全限制。如果工具无法连接，请如实说明。",
-      "当前工作目录：" + (workspace || "未设置"),
-      "仅在当前 MCP 桥支持时，使用以下单步工具格式：",
-      fence + "nexus",
-      '{"tool":"command_run","command":"dir"}',
+      '你可以通过 WebAgent 提议使用本地 Nexus MCP，但你不能直接访问本机。',
+      '每次只输出一个 nexus 代码块；扩展根据用户开关逐次确认或自动执行、回填或自动发送。不要编造执行结果。',
+      '用户设置：自动执行='+Boolean(CONFIG.autoExecute)+'；自动发送工具结果='+Boolean(CONFIG.autoSend)+'。不要自行改变这些设置。',
+      '长代码也必须是完整合法 JSON：content 中的换行、双引号和反斜杠按 JSON 字符串规则转义；不得省略、截断或用“...”代替源码。',
+      "调用输出规范：只有确实需要工具时才输出一个 nexus 代码块；代码块内必须只有一个完整 JSON 对象，禁止说明文字、JSON 注释、尾逗号、JSON5 或多个调用。",
+      "字段规范：tool 必须是已发现的真实工具名；arguments 必须是对象，字段和类型严格遵守工具 schema。文件源码只能放在 schema 指定的字符串字段（如 content），不得直接拼接裸 HTML/JS。",
+      "字符串规范：换行编码为 \\n、回车为 \\r、制表符为 \\t；字符串内的双引号编码为 \\\"，反斜杠编码为 \\\\。禁止字符串内直接出现未转义真实换行；不要对整个 JSON 再次字符串化或双重转义。",
+      "编码示例（仅展示字段，不是工具调用）：{\"content\":\"第一行\\n第二行：const title = \\\"番茄钟\\\";\"}",
+      "完整性规范：不得用省略号、占位符或“其余不变”代替文件内容；若单次回复无法容纳完整调用，应先说明并规划按工具支持的分段写入方式进行，每次调用都必须独立完整，禁止输出半截 JSON。",
+      "执行规范：输出调用后等待扩展返回真实结果；不要声称尚未执行的操作已经成功。任务完成后不再输出工具调用，直接自然语言总结。",
+      '格式：{"tool":"nexus_directory_list","arguments":{"projectId":"项目ID","path":"."}}',
+      '当前项目 ID：' + (CONFIG.projectId || '未设置，请先向用户确认'),
+      '工作目录：' + (CONFIG.workspace || '未设置') + '；路径应使用项目内相对路径。',
+      '先用以下只读请求确认实际项目，未经许可不要读凭证、写文件、删文件或运行命令：',
+      fence + 'nexus',
+      '{"tool":"nexus_project_list","arguments":{}}',
       fence,
-      "完成后依据工具返回的真实结果回答。"
-    ].join("\n");
+      '其他工具请先通过 nexus_discover_tools 查询名称和参数，不要猜测。',
+      '权限以 nexus_project_info 的实时结果为准。accessMode 管文件读写，executionMode 管命令执行；执行关闭不代表文件只读。不要尝试自行切换权限，也不要反复引用旧的只读信息。',
+      '任务完成后停止工具调用，直接总结。'
+    ].join('\n');
   }
 
   // =========================================================================
@@ -2742,16 +2677,18 @@
   let toolsListContainerEl = null;
 
   function updateStatusUI(state, text) {
+    if(extensionContextInvalid){showExtensionRefreshNeeded();return;}
     if (pillDotEl) pillDotEl.className = `nexus-dot ${state}`;
     if (pillTextEl) pillTextEl.innerText = text;
   }
 
   function updatePanelPingUI(ok, pingMs) {
+    if(extensionContextInvalid){showExtensionRefreshNeeded();return;}
     if (panelStatusEl) {
       if (ok) {
         setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator online"></span><span>Nexus MCP 服务就绪</span></span><span class="nexus-status-ping">${pingMs || 70}ms</span>`);
       } else {
-        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.1</span>`);
+        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.11</span>`);
       }
     }
   }
@@ -2965,6 +2902,7 @@
     iconSpan.innerText = CURRENT_THEME.icon;
 
     pillTextEl = document.createElement("span");
+    pillTextEl.className="nexus-pill-text";
     pillTextEl.innerText = CURRENT_THEME.badgeTitle;
 
     const arrowSpan = document.createElement("span");
@@ -2984,7 +2922,7 @@
       <div class="nexus-drawer-head" id="nexus-head-main">
         <div class="nexus-drawer-title">
           ${nxSvg("sparkle", "nexus-ui-icon", "color: var(--nx-primary); margin-right: 6px;")}
-          <span>${CURRENT_THEME.name} × WebAgent 1.3.1</span>
+          <span>${CURRENT_THEME.name} × WebAgent 1.3.11</span>
         </div>
         <div class="nexus-head-actions">
           <button class="nexus-theme-btn-quick" id="nexus-open-settings" title="打开设置中心">${nxSvg("gear", "nexus-icon-btn")}</button>
@@ -3035,7 +2973,7 @@
         <!-- 核心大按钮: 注入开发协作协议 -->
         <button class="nexus-btn-primary" id="nexus-act-prompt" style="padding: 12px 14px; font-size: 13px; font-weight: 700; border-radius: 10px; margin-bottom: 2px;">
           ${nxSvg("zap", "nexus-btn-icon", "margin-right: 6px; vertical-align: -2px;")}
-          <span>注入开发协作协议 (防拒答)</span>
+          <span>注入开发协作协议</span>
         </button>
 
         
@@ -3061,7 +2999,7 @@
       <div id="nexus-view-settings" class="nexus-view-container" style="display: none;">
         <!-- 服务状态指示条 -->
         <div class="nexus-status-bar" id="nexus-status-bar">
-          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.1 MCP 网关...</span></span>
+          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.11 MCP 网关...</span></span>
         </div>
 
         <!-- 默认工作目录 -->
@@ -3082,30 +3020,36 @@
 
         <!-- 自动执行 Switch -->
         <div class="nexus-switch-row">
-          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary); display: inline-flex; align-items: center;">${nxSvg("zap", "nexus-ui-icon")}自动拦截 MCP 调用并回填执行结果</span>
+          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary); display: inline-flex; align-items: center;">${nxSvg("zap", "nexus-ui-icon")}自动执行工具（关闭时逐次确认）</span>
           <label class="nexus-switch">
             <input type="checkbox" id="nexus-cfg-auto" ${CONFIG.autoExecute ? "checked" : ""}>
             <span class="nexus-slider"></span>
           </label>
         </div>
 
+        <!-- 自动发送与自动执行独立，由用户选择 -->
+        <div class="nexus-switch-row">
+          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary);">自动发送结果（包含发送栏已有草稿）</span>
+          <label class="nexus-switch"><input type="checkbox" id="nexus-cfg-send" ${CONFIG.autoSend ? "checked" : ""}><span class="nexus-slider"></span></label>
+        </div>
+
         <!-- 发送延迟安全缓冲与防风控 -->
         <div class="nexus-field" style="margin-top: 2px; padding: 6px 10px; background: rgba(0,0,0,0.18); border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.15);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("clock", "nexus-ui-icon")}回填延迟缓冲</label>
+            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("clock", "nexus-ui-icon")}自动发送延迟缓冲</label>
             <span id="nexus-delay-val" style="font-size: 12px; font-weight: 700; color: ${CURRENT_THEME.primaryColor};">${Number(CONFIG.sendDelay).toFixed(1)}s</span>
           </div>
           <input type="range" id="nexus-cfg-delay" min="1.0" max="6.0" step="0.5" value="${CONFIG.sendDelay}" style="width: 100%; accent-color: ${CURRENT_THEME.primaryColor}; cursor: pointer;" />
           <div style="font-size: 10px; color: var(--nx-text-muted); line-height: 1.3; margin-top: 2px;">
-            * 增加请求间隔秒数，彻底消除网页模型接口速率限制。
+            * 仅用于自动发送；延迟期间关闭自动发送开关可取消。
           </div>
         </div>
 
         <!-- 自动捕获速率限制重试 Switch -->
         <div class="nexus-switch-row" style="margin-top: 2px;">
-          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}遭遇网页接口限流时自动冷却并恢复</span>
+          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}限流重试未启用（不会自动重发）</span>
           <label class="nexus-switch" style="transform: scale(0.85); transform-origin: right center;">
-            <input type="checkbox" id="nexus-cfg-retry" ${CONFIG.autoRetry ? "checked" : ""}>
+            <input type="checkbox" id="nexus-cfg-retry" disabled>
             <span class="nexus-slider"></span>
           </label>
         </div>
@@ -3150,10 +3094,10 @@
           <div class="nexus-adv-body" id="nexus-adv-body">
             <div class="nexus-field">
               <label class="nexus-label">WebAgent 客户端令牌 (Token)</label>
-              <input class="nexus-input" type="password" id="nexus-cfg-token" placeholder="在 WebAgent 客户端「访问令牌」生成后粘贴 (未启用认证可留空)" value="${CONFIG.token}" />
+              <input class="nexus-input" type="password" id="nexus-cfg-token" placeholder="请在扩展弹窗配置 Bridge Token，本地直连可留空" value="" disabled />
             </div>
             <div class="nexus-field">
-              <label class="nexus-label">WebAgent 服务端地址 (默认 http://127.0.0.1:18080)</label>
+              <label class="nexus-label">Nexus MCP 服务地址 (默认 http://127.0.0.1:8787)</label>
               <input class="nexus-input" type="text" id="nexus-cfg-url" value="${CONFIG.nexusUrl}" />
             </div>
           </div>
@@ -3295,7 +3239,7 @@
       });
     }
 
-    // 5. 主操作：注入开发协作协议 (防拒答)
+    // 5. 主操作：注入开发协作协议
     const actPromptBtn = drawerEl.querySelector("#nexus-act-prompt");
     if (actPromptBtn) {
       actPromptBtn.addEventListener("click", () => {
@@ -3308,7 +3252,7 @@
         currentAdapter.setValue(inputEl, promptText);
         pill.classList.remove("open");
         drawerEl.classList.remove("show");
-        showToast(`已填入 WebAgent 1.3.1 协作协议，请点击发送！`);
+        showToast(`已填入 WebAgent 1.3.11 协作协议，请点击发送！`);
       });
     }
 
@@ -3435,13 +3379,24 @@
     const autoBox = drawerEl.querySelector("#nexus-cfg-auto");
     if (autoBox) {
       autoBox.addEventListener("change", (e) => {
+        if (!e.isTrusted) { e.target.checked=CONFIG.autoExecute; return; }
+        if(e.target.checked && !CONFIG.autoExecute && !confirm('开启自动执行后，AI 的工具提议不再逐次确认，可能读写文件或执行命令。确认开启？')) { e.target.checked=false; return; }
         CONFIG.autoExecute = e.target.checked;
         GM_setValue("webagent_auto_execute", CONFIG.autoExecute); GM_setValue("nexus_auto_execute", CONFIG.autoExecute);
         showToast(`自动执行已${CONFIG.autoExecute ? "开启" : "暂停"}`);
       });
     }
 
-    // 9. 设置项：回填延迟缓冲滑动条
+    // 自动发送开关：与执行权限、自动执行互不联动。
+    const sendBox = drawerEl.querySelector("#nexus-cfg-send");
+    if(sendBox)sendBox.addEventListener("change",e=>{
+      if(!e.isTrusted){e.target.checked=CONFIG.autoSend;return;}
+      if(e.target.checked && !CONFIG.autoSend && !confirm('开启后，工具结果及发送栏已有草稿将自动提交给当前网页 AI。确认开启？')){e.target.checked=false;return;}
+      CONFIG.autoSend=e.target.checked;GM_setValue('webagent_auto_send',CONFIG.autoSend);
+      showToast('自动发送已'+(CONFIG.autoSend?'开启':'关闭'));
+    });
+
+    // 9. 设置项：自动发送延迟缓冲滑动条
     const delaySlider = drawerEl.querySelector("#nexus-cfg-delay");
     const delayValEl = drawerEl.querySelector("#nexus-delay-val");
     if (delaySlider && delayValEl) {
@@ -3454,7 +3409,7 @@
         const val = parseFloat(e.target.value);
         CONFIG.sendDelay = val;
         GM_setValue("webagent_send_delay", val); GM_setValue("nexus_send_delay", val);
-        showToast(`回填延迟已设为 ${val.toFixed(1)} 秒`);
+        showToast(`自动发送延迟已设为 ${val.toFixed(1)} 秒`);
       });
     }
 
@@ -3575,7 +3530,9 @@
     return null;
   }
 
+  let lastToolParseStatus = {status:'ignored'};
   function parseToolCallFromReply(text, lastMsgNode) {
+    lastToolParseStatus = {status:'ignored'};
     if (!text && !lastMsgNode) return null;
 
     // 1. 优先直接从 HTML DOM 的 pre/code 代码块提取（网页 Markdown 渲染后通常剥除反引号）
@@ -3586,7 +3543,7 @@
 
       // 第一遍扫描：优先正文中的代码块（排除思考过程）
       for (const block of codeBlocks) {
-        if (block.closest && block.closest("[class*='think'], [class*='reasoning'], details, .ds-think-content")) {
+        if (block.closest && block.closest("[class*='think'], [class*='thought'], [class*='reasoning'], model-thoughts, details, .ds-think-content")) {
           continue;
         }
         const targetEl = (block.matches && block.matches("pre, pre code, code-block")) ? block : block.closest?.("pre, code-block") || block.parentElement || block;
@@ -3595,13 +3552,7 @@
         if (obj) return obj;
       }
 
-      // 第二遍扫描（兜底）：如果正文中没有工具调用，但思考过程内包含了有效 tool 代码块，则放行提取（防止 DeepSeek R1 误写在思考区导致死锁）
-      for (const block of codeBlocks) {
-        const targetEl = (block.matches && block.matches("pre, pre code, code-block")) ? block : block.closest?.("pre, code-block") || block.parentElement || block;
-        const raw = targetEl.textContent?.trim() || "";
-        const obj = tryParseToolJson(raw);
-        if (obj) return obj;
-      }
+
     }
 
     // 2. 匹配专属 Markdown 代码块 (严格限定 ```nexus 与 ```mcp，兼容 ```tool, ```json 与无指定语言的通用代码块)
@@ -3624,108 +3575,15 @@
     return null;
   }
 
-  // 智能括号深度解析器：从杂质文本中精准提取第一个包含 "tool" 的闭合平衡 JSON 对象
+  // Shared parser keeps long source payloads intact and never completes truncated calls.
   function extractFirstJsonObject(str) {
-    if (!str) return null;
-    let searchIndices = [];
-    let idx = str.indexOf("{");
-    while (idx !== -1) {
-      searchIndices.push(idx);
-      idx = str.indexOf("{", idx + 1);
-    }
-    if (searchIndices.length === 0) return null;
-
-    for (const startIdx of searchIndices) {
-      let depth = 0;
-      let inString = false;
-      let escape = false;
-      for (let i = startIdx; i < str.length; i++) {
-        const ch = str[i];
-        if (escape) {
-          escape = false;
-          continue;
-        }
-        if (ch === "\\") {
-          escape = true;
-          continue;
-        }
-        if (ch === '"') {
-          inString = !inString;
-          continue;
-        }
-        if (!inString) {
-          if (ch === "{") depth++;
-          else if (ch === "}") {
-            depth--;
-            if (depth === 0) {
-              const candidate = str.slice(startIdx, i + 1);
-              if (candidate.includes('"tool"') || candidate.includes("'tool'") || candidate.includes('"command_run"') || candidate.includes('"file_read"') || candidate.includes('"file_write"') || candidate.includes('"browser_open"')) {
-                return candidate;
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    return null;
+    return WebAgentToolJson.firstObject(str);
   }
 
   function tryParseToolJson(raw) {
-    if (!raw) return null;
-    raw = raw.trim();
-    // 强约束：必须包含 "tool" 键，绝不把普通代码中的 name / action 视作工具
-    if (!raw.includes('"tool"') && !raw.includes("'tool'") && !raw.includes('"name"') && !raw.includes("'name'") && !raw.includes('"action"') && !raw.includes("'action'") && !raw.includes('"command_run"') && !raw.includes('"file_read"') && !raw.includes('"file_write"')) {
-      return null;
-    }
-    // 优先通过平衡括号算法截取精准的独立 JSON 闭合块 (彻底剔除尾随杂质)
-    const exactJson = (extractFirstJsonObject(raw) || raw).trim();
-
-    function validateToolObj(obj) {
-      if (!obj || typeof obj !== "object") return null;
-      let tool = obj.tool || obj.name || obj.action || obj.tool_name || obj.function;
-      if (!obj.tool && !isLikelyValidTool(tool)) return null;
-      if (typeof tool === "string" && tool.trim().length > 0 && /^[a-zA-Z0-9_-]+$/.test(tool.trim())) {
-        const cleanTool = tool.trim();
-        delete obj.tool; delete obj.name; delete obj.action; delete obj.tool_name; delete obj.function;
-        const args = (obj.arguments && typeof obj.arguments === "object")
-          ? obj.arguments
-          : (obj.args && typeof obj.args === "object")
-          ? obj.args
-          : obj;
-        return { tool: cleanTool, args };
-      }
-      return null;
-    }
-
-    // 1. 优先原汁原味直接解析 (针对 AI 输出的标准 JSON)
-    try {
-      const obj = JSON.parse(exactJson);
-      const res = validateToolObj(obj);
-      if (res) return res;
-    } catch (e1) {}
-
-    // 2. 补全首尾括号与清除末尾多余逗号
-    let target = exactJson;
-    if (!target.startsWith("{") && target.endsWith("}")) target = "{" + target;
-    if (target.startsWith("{") && !target.endsWith("}")) target = target + "}";
-    target = target.replace(/,\s*([\]}])/g, "$1");
-
-    try {
-      const obj = JSON.parse(target);
-      const res = validateToolObj(obj);
-      if (res) return res;
-    } catch (e2) {}
-
-    // 3. 容错修复：仅修复真正的孤立单反斜杠 (绝对不破坏原本已合法转义的双反斜杠 \\)
-    try {
-      const fixed = target.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, "\\\\");
-      const obj = JSON.parse(fixed);
-      const res = validateToolObj(obj);
-      if (res) return res;
-    } catch (e3) {}
-
-    return null;
+    const result = WebAgentToolJson.inspect(raw, {isKnownTool:isLikelyValidTool});
+    if(result.status!=='ignored')lastToolParseStatus={status:result.status,reason:result.reason,repairs:result.repairs};
+    return result.call;
   }
 
   // =========================================================================
@@ -3854,7 +3712,7 @@
     if (lastMsgNode && lastMsgNode.cloneNode) {
       try {
         const clone = lastMsgNode.cloneNode(true);
-        const thinkEls = clone.querySelectorAll("[class*='think'], [class*='reasoning'], details, .ds-think-content");
+        const thinkEls = clone.querySelectorAll("[class*='think'], [class*='thought'], [class*='reasoning'], model-thoughts, details, .ds-think-content");
         thinkEls.forEach(el => el.remove());
         cleanText = clone.textContent || "";
       } catch {}
@@ -3895,8 +3753,7 @@
 
   // 统一键盘安全提交触发器
   function dispatchSubmit(inputEl) {
-    if (!inputEl) return;
-    inputEl.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
+    showToast("请检查草稿后手动点击网页发送按钮");
   }
 
   const danglingBlockState = {
@@ -3906,20 +3763,7 @@
   };
 
   function requestContinuation() {
-    const inputEl = currentAdapter.getInput();
-    if (!inputEl) return;
-    const prompt = "⚠️ 检测到上一条回复的 ```nexus 工具调用代码块输出未完整被截断。请紧接上文未写完的地方直接继续输出剩余内容，并务必闭合 ```nexus 代码块，不要重复前文。";
-    currentAdapter.setValue(inputEl, prompt);
-    setTimeout(() => {
-      const sendBtn = currentAdapter.getSendBtn();
-      if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute("aria-disabled") !== "true") {
-        sendBtn.click();
-        showToast("🧩 已自动触发【继续输出】拼接请求...");
-      } else {
-        dispatchSubmit(inputEl);
-        showToast("🧩 已自动回车触发【继续输出】拼接请求...");
-      }
-    }, 400);
+    showToast('工具请求不完整，请让 AI 重新输出完整代码块；不会自动发送消息');
   }
 
   // 2. 页面“会话达到长度上限”监听与跨对话自愈 (严格隔离消息正文，绝不在聊天文本中捕获)
@@ -3963,145 +3807,10 @@
     return false;
   }
 
-  let isHandingOver = false;
   function triggerContextLimitHandover() {
-    if (isHandingOver) return;
-    isHandingOver = true;
-
-    showToast("🚨 检测到会话已达长度上限！正在打包任务断点，自动开辟新对话无缝续传...");
-
-    const state = getHandoverState();
-    state.hasPendingHandover = true;
-    state.handoverTime = Date.now();
-    state.platform = PLATFORM;
-    state.workspace = CONFIG.workspace || "";
-    saveHandoverState(state);
-
-    setTimeout(() => {
-      if (PLATFORM === "deepseek") {
-        const newChatBtn = document.querySelector(
-          "div[class*='new-chat'], button[class*='new-chat'], a[href='/'], div[role='button']:has(svg)"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 DeepSeek 新建对话...");
-        } else {
-          window.location.href = "https://chat.deepseek.com/";
-        }
-      } else if (PLATFORM === "kimi") {
-        const newChatBtn = document.querySelector(
-          "button:has-text('新建对话'), div:has-text('新建对话'), [class*='new-chat'], a[href='/']"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 Kimi 新建对话...");
-        } else {
-          window.location.href = "https://kimi.moonshot.cn/";
-        }
-      } else if (PLATFORM === "duckai") {
-        const newChatBtn = document.querySelector(
-          "button[aria-label*='New chat'], button[aria-label*='New Chat'], a[href*='chat'], button:has-text('New Chat'), button:has(svg)"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 Duck.ai 新建对话...");
-        } else {
-          window.location.href = "https://duck.ai/";
-        }
-      } else if (PLATFORM === "doubao") {
-        const newChatBtn = document.querySelector(
-          "button[data-testid='chat_input_new_dialog_button'], button[class*='new-dialog'], div[class*='new-dialog']"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 豆包 新建对话...");
-        } else {
-          window.location.href = "https://www.doubao.com/chat/";
-        }
-      } else if (PLATFORM === "qwen") {
-        const newChatBtn = document.querySelector(
-          "button[class*='new-chat'], div[class*='new-chat'], button[aria-label*='新建'], a[href='/']"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 通义千问 新建对话...");
-        } else {
-          window.location.href = "https://chat.qwen.ai/";
-        }
-      } else if (PLATFORM === "dola") {
-        const newChatBtn = document.querySelector(
-          "button[aria-label*='New'], a[href*='chat'], button:has(svg)"
-        );
-        if (newChatBtn) {
-          newChatBtn.click();
-          showToast("🚀 已自动触发 Dola 新建对话...");
-        } else {
-          window.location.href = "https://www.dola.com/chat";
-        }
-
-      } else {
-        window.location.href = window.location.origin + "/";
-      }
-    }, 1200);
+    showToast('会话长度已达上限，请自行新建对话；不会自动切换或发送');
   }
-
-  let resumeCheckTicks = 0;
-  function checkAndResumeHandover() {
-    const state = getHandoverState();
-    if (!state || !state.hasPendingHandover) return;
-    if (state.platform && state.platform !== PLATFORM) return;
-
-    if (Date.now() - (state.handoverTime || 0) > 300000) {
-      state.hasPendingHandover = false;
-      saveHandoverState(state);
-      return;
-    }
-
-    const inputEl = currentAdapter.getInput();
-    if (!inputEl) return;
-    if (inputEl.disabled || inputEl.getAttribute("contenteditable") === "false") return;
-    if (currentAdapter.isGenerating()) return;
-
-    resumeCheckTicks++;
-    if (resumeCheckTicks < 3) return;
-
-    resumeCheckTicks = 0;
-    state.hasPendingHandover = false;
-    saveHandoverState(state);
-
-    const ws = (state.workspace || CONFIG.workspace || "").replace(/\\/g, "/");
-    const stepsText = (state.recentSteps && state.recentSteps.length > 0)
-      ? state.recentSteps.map(s => `  - 步骤 ${s.step}: 调用工具 [${s.tool}] -> ${s.summary}`).join("\n")
-      : "  - 暂无历史步骤，直接开始执行";
-
-    const resumePrompt = `【系统自愈：跨会话无缝续传任务】
-上一轮会话因达到平台上下文长度限制已自动安全归档。自动化控制桥已为您自动开辟全新会话，并完整同步上文工程断点与执行上下文：
-
-【当前项目硬锚点与工作区】
-- 默认工作目录: ${ws}
-- 核心任务目标: ${state.lastUserGoal || "全栈工程开发任务"}
-
-【上文已完成的历史步骤断点快照】
-${stepsText}
-
-【当前待执行的下一步操作】
-请紧接上述历史步骤与最新断点结果，直接输出一个标准的 \`\`\`nexus 代码块执行下一步工具，不要任何多余口头闲聊！`;
-
-    currentAdapter.setValue(inputEl, resumePrompt);
-    showToast("🧩 正在全新会话中自动注入跨会话断点快照...");
-
-    setTimeout(() => {
-      const sendBtn = currentAdapter.getSendBtn();
-      if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute("aria-disabled") !== "true") {
-        sendBtn.click();
-        showToast("🚀 跨会话无缝续传成功！AI 已在全新空间无缝接续任务。");
-      } else {
-        dispatchSubmit(inputEl);
-        showToast("🚀 跨会话无缝续传成功 (回车提交)！");
-      }
-      isHandingOver = false;
-    }, 600);
-  }
+  function checkAndResumeHandover() { /* User-controlled conversations only. */ }
 
   // =========================================================================
   // 9. 核心 ReAct 自动观察、防频繁安全缓冲与回填执行循环
@@ -4110,7 +3819,7 @@ ${stepsText}
   // 全局键盘监听：当用户在输入框敲击 Enter 时精准记录用户意图目标
   if (typeof document !== "undefined") {
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (e.key === "Enter" && !e.shiftKey && e.isTrusted) {
         try {
           const input = currentAdapter ? currentAdapter.getInput() : null;
           if (input && (input.value || input.innerText)) {
@@ -4126,9 +3835,36 @@ ${stepsText}
 
   function startReActLoop() {
     let lastStableTicks = 0;
-    let prevText = "";
+    let prevText = "", loopRoute=location.href;
+    let pendingUserText='';
+    const replyGate=WebAgentReplyGate.create({
+      canContinueRoute:(from,to)=>Boolean(pendingUserText && currentAdapter.isNewConversationRoute?.(from,to)),
+      matchesContinuedSubmission:()=>currentAdapter.matchesFirstSubmission?.(pendingUserText)
+    });
+    function armReply(isTrusted){
+      const input=currentAdapter.getInput();
+      pendingUserText=input?(currentAdapter.getValue?.(input) ?? input.value ?? input.innerText ?? ''):'';
+      if(isTrusted && pendingUserText)recordUserGoal(pendingUserText);
+      replyGate.submit(location.href,currentAdapter.getLastReplyText());
+    }
+    replyGate.route(loopRoute);
+    // Submit intent arms the first response even on an initially empty conversation.
+    document.addEventListener('click',event=>{
+      if(!extensionContextAlive())return;
+      const send=currentAdapter.getSendBtn?.();
+      if(send && (event.target===send || send.contains?.(event.target)))armReply(event.isTrusted);
+      else if(event.isTrusted && currentAdapter.isRegenerateTarget?.(event.target))replyGate.submit(location.href,currentAdapter.getLastReplyText());
+      else if(event.isTrusted && currentAdapter.isHistoryTarget?.(event.target))replyGate.cancel(location.href,currentAdapter.getLastReplyText());
+    },true);
+    document.addEventListener('keydown',event=>{
+      if(event.key!=='Enter'||event.shiftKey||event.isComposing||!event.isTrusted)return;
+      const input=currentAdapter.getInput();
+      if(input && (event.target===input || input.contains?.(event.target)))armReply(event.isTrusted);
+    },true);
 
-    setInterval(() => {
+    const loopTimer=setInterval(() => {
+      if(!extensionContextAlive()){showExtensionRefreshNeeded();clearInterval(loopTimer);return;}
+      if(location.href!==loopRoute){loopRoute=location.href;replyGate.route(loopRoute);lastStableTicks=0;prevText="";lastHandledMessageSignature="";}
       // 保持 UI 始终挂载 (防止 SPA 路由切换时被移除)
       if (!document.getElementById("nexus-agent-root") && document.body) {
         createAgentUI();
@@ -4180,6 +3916,7 @@ ${stepsText}
           }
         }
 
+        if(!replyGate.accept(location.href,currentText))return;
         const sig = `${currentText.length}_${currentText.slice(-60)}`;
         if (sig === lastHandledMessageSignature) {
           return;
@@ -4203,13 +3940,6 @@ ${stepsText}
           }
         } else {
           toolCall = parseToolCallFromReply(currentText, lastNode);
-        if (!toolCall && typeof detectAndRecoverRefusal === "function") {
-          const recovered = detectAndRecoverRefusal(currentText);
-          if (recovered) {
-            toolCall = recovered;
-            showToast("⚡ 捕获到模型拒答/说教，WebAgent 自愈引擎已代为在桌面拉起 CMD！");
-          }
-        }
         }
 
         if (toolCall) {
@@ -4218,6 +3948,11 @@ ${stepsText}
           }
           lastHandledMessageSignature = sig;
           handleToolCallAutomatically(toolCall);
+        } else if (['invalid','incomplete'].includes(lastToolParseStatus.status)) {
+          lastHandledMessageSignature = sig;
+          showToast(lastToolParseStatus.status==='incomplete'
+            ? 'MCP 命令内容被截断，未执行；请让 AI 重新输出完整 JSON（不会猜补代码）'
+            : 'MCP 命令 JSON 格式仍有错误，未执行；请让 AI 重新输出完整 JSON');
         } else if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
           // 没有解析出有效工具，检查是否是未闭合的残缺截断代码块
           const truncatedSnippet = detectTruncatedCodeBlock(currentText, lastNode);
@@ -4226,7 +3961,7 @@ ${stepsText}
             danglingBlockState.isWaitingContinuation = true;
             danglingBlockState.accumulatedCode = truncatedSnippet;
             danglingBlockState.retryCount = 1;
-            showToast("⚠️ 检测到工具调用被截断未闭合，正在自动请求续写拼接 (仅限 1 次)...");
+            showToast("⚠️ 检测到工具调用被截断未闭合，请让 AI 重新输出完整代码块（不会自动发送）");
             requestContinuation();
           }
         }
@@ -4286,10 +4021,12 @@ ${stepsText}
     isAutoDispatchSuspended = false;
   }
 
-  function handleToolCallAutomatically(toolCall) {
+  async function handleToolCallAutomatically(toolCall) {
     if (!CONFIG.autoExecute) {
-      showToast(`检测到 AI 请求调用 MCP [${toolCall.tool}]，当前处于手动确认模式`);
-      return;
+      if (typeof webagentReviewTool !== 'function' || !(await webagentReviewTool(toolCall))) {
+        showToast('已取消本次调用，未执行本地工具');
+        return;
+      }
     }
 
     if (isAutoDispatchSuspended) {
@@ -4416,7 +4153,7 @@ ${stepsText}
         if (dataStr.length > 3500) {
           dataStr = dataStr.slice(0, 2200) + "\n\n... [⚠️ 执行返回结果过长 (共 " + dataStr.length + " 字符)，已智能截取首尾关键数据以节省 Token] ...\n\n" + dataStr.slice(-1000);
         }
-        feedbackText = "【WebAgent 1.3.1 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
+        feedbackText = "【WebAgent 1.3.11 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
       } else {
         consecutiveErrors++;
         // 若同一任务连续失败 5 次，停止自动回填，防止模型在报错中无限死循环
@@ -4426,7 +4163,7 @@ ${stepsText}
           return;
         }
         consecutiveAutoDispatches++;
-        feedbackText = `【WebAgent 1.3.1 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请根据报错调整参数或换用其他工具重试）`;
+        feedbackText = `【WebAgent 1.3.11 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请如实报告失败，严格遵守用户本次授权范围。若用户限定只调用一次，或下一步需要新增操作/权限，必须停止并等待用户；不得擅自扩大范围或重复副作用调用。）`;
       }
 
       // 实时记录到跨会话断点任务历史中
@@ -4437,156 +4174,44 @@ ${stepsText}
     });
   }
 
-  // 安全缓冲调度器：带倒计时提示与防频繁风控保护
+  // Results go directly to the input. Queue writes to avoid losing overlapping results.
+  let draftWriteQueue = Promise.resolve();
+  let lastAutoSendStatus = null;
   function safeDispatchFeedbackToChat(feedbackText, toolName) {
     latestFeedbackText = feedbackText;
-    const delaySec = Math.max(1.0, Math.min(10.0, parseFloat(CONFIG.sendDelay) || 3.0));
-    let remainingMs = Math.round(delaySec * 1000);
-
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
-
-    showToast(`⏳ MCP [${toolName}] 执行成功！安全防风控冷却: ${(remainingMs / 1000).toFixed(1)}s`);
-
-    const interval = 500;
-    countdownTimer = setInterval(() => {
-      remainingMs -= interval;
-      if (remainingMs > 0) {
-        showToast(`⏳ 安全防频繁冷却: ${(remainingMs / 1000).toFixed(1)}s...`);
-      } else {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-        triggerFinalSend();
-      }
-    }, interval);
-
-    function triggerFinalSend() {
-      // 检查模型是否还在生成中，若仍在生成则微等 500ms
-      if (currentAdapter.isGenerating()) {
-        showToast("⏳ 网页仍在输出或保存会话，等待就绪...");
-        setTimeout(triggerFinalSend, 500);
-        return;
-      }
-
-      const inputEl = currentAdapter.getInput();
-      if (!inputEl) {
-        showToast("⚠️ 未找到输入框，请手动复制结果");
-        return;
-      }
-
-      // 填入执行反馈
-      currentAdapter.setValue(inputEl, feedbackText);
-
-      setTimeout(() => {
-        const sendBtn = currentAdapter.getSendBtn();
-        const isBtnReady =
-          sendBtn &&
-          !sendBtn.disabled &&
-          sendBtn.getAttribute("aria-disabled") !== "true" &&
-          !sendBtn.classList.contains("disabled") &&
-          !sendBtn.classList.contains("ds-button--disabled");
-
-        if (isBtnReady) {
-          sendBtn.click();
-          showToast("🚀 已将 MCP 执行结果安全提交给 AI！");
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+    draftWriteQueue = draftWriteQueue.then(async () => {
+      try {
+        if(extensionContextInvalid || !extensionContextAlive()){showExtensionRefreshNeeded();return;}
+        const adapter = currentAdapter, pageUrl = location.href;
+        const result = await WebAgentDraftOutput.writeToDraft(adapter, feedbackText);
+        if (!result.written) return;
+        if (CONFIG.autoSend && !extensionContextInvalid) {
+          lastAutoSendStatus = {sent:false,reason:'pending',time:Date.now()};
+          showToast('结果已回填，按你的设置等待自动发送');
+          const sent = await WebAgentAutoSend.sendDraft(adapter, result, {
+            enabled: () => CONFIG.autoSend && !extensionContextInvalid && extensionContextAlive() && currentAdapter === adapter && location.href === pageUrl,
+            delayMs: CONFIG.sendDelay * 1000});
+          lastAutoSendStatus = {sent:sent.sent,reason:sent.reason||'clicked',waitingFor:sent.waitingFor,time:Date.now()};
+          showToast(WebAgentAutoSend.describe ? WebAgentAutoSend.describe(sent) : (sent.sent?'按你的设置已点击发送结果':'自动发送未完成，请检查发送栏'));
         } else {
-          dispatchSubmit(inputEl);
-          showToast("🚀 已通过回车安全提交 MCP 结果！");
+          showToast(result.appended ? '结果已追加到发送栏，原草稿已保留；请手动发送' : '结果已填入发送栏，请检查后手动发送');
         }
-      }, 400);
-    }
-  }
-
-  // 网页端“消息发送过于频繁”风控自动捕获与自愈重试
-  let lastSpamWarningTime = 0;
-  function checkAndHandleRateLimitError() {
-    if (!CONFIG.autoRetry) return;
-
-    // 严禁扫描插件自身 DOM (#nexus-agent-root 与 .nexus-toast)
-    const nodes = Array.from(document.querySelectorAll("div, span, p")).filter((el) => {
-      if (el.closest("#nexus-agent-root") || el.closest(".nexus-toast") || el.classList.contains("nexus-toast")) {
-        return false;
+      } catch (error) {
+        showToast(error.message);
+        if (typeof webagentOfferResultCopy === 'function') webagentOfferResultCopy(feedbackText);
       }
-      if (el.children.length > 2) return false;
-      const t = el.textContent || "";
-      return (
-        t.includes("消息发送过于频繁") ||
-        t.includes("请稍后重试") ||
-        t.includes("发送过于频繁") ||
-        t.includes("请求过于频繁")
-      );
     });
-
-    if (nodes.length === 0) {
-      retryCountForCurrentError = 0;
-      return;
-    }
-
-    const now = Date.now();
-    // 每次处理间隔至少 5 秒
-    if (now - lastRateLimitHandledTime < 5000) return;
-
-    // 连续重试达上限后，1 分钟内只提示一次，绝不弹窗轰炸
-    if (retryCountForCurrentError >= 3) {
-      if (now - lastSpamWarningTime > 60000) {
-        showToast("⚠️ 平台限频较为严格，请稍等片刻后手动重试");
-        lastSpamWarningTime = now;
-      }
-      return;
-    }
-
-    const errNode = nodes[nodes.length - 1];
-    lastRateLimitHandledTime = now;
-    retryCountForCurrentError++;
-
-    showToast(`⚠️ 捕获到网页频繁限制！安全冷却 3.5 秒后自动重试 (${retryCountForCurrentError}/3)...`);
-
-    setTimeout(() => {
-      // 1. 优先定位页面上的重试/刷新按钮 (DeepSeek 橙色圆圈 🔄)
-      const container =
-        errNode.closest("div[class*='message']") ||
-        errNode.parentElement?.parentElement ||
-        errNode.parentElement;
-
-      let retryBtn = null;
-      if (container) {
-        const btns = container.querySelectorAll("div[role='button'], button");
-        for (const b of btns) {
-          // 排除明确标有复制/编辑的按钮
-          const label = b.getAttribute("aria-label") || "";
-          if (label.includes("复制") || label.includes("编辑") || label.includes("Copy") || label.includes("Edit")) {
-            continue;
-          }
-          if (b.querySelector("svg")) {
-            retryBtn = b;
-            break;
-          }
-        }
-      }
-
-      if (retryBtn) {
-        retryBtn.click();
-        showToast("🔄 已自动点击网页重试按钮！");
-      } else if (latestFeedbackText) {
-        // 2. 备用方案：重新填入最新执行反馈并发送
-        const inputEl = currentAdapter.getInput();
-        if (inputEl) {
-          currentAdapter.setValue(inputEl, latestFeedbackText);
-          setTimeout(() => {
-            const sendBtn = currentAdapter.getSendBtn();
-            if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute("aria-disabled") !== "true") {
-              sendBtn.click();
-            } else {
-              dispatchSubmit(inputEl);
-            }
-            showToast("🔄 已重新安全提交 MCP 执行结果！");
-          }, 400);
-        }
-      }
-    }, 3500);
   }
+
+  function checkAndHandleRateLimitError() { /* Automatic retry/submission disabled. */ }
+
+  // Read-only popup diagnostics: version and user switches only, no credentials.
+  if(extensionContextAtLoad)chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
+    if(sender.id!==chrome.runtime.id || request?.action!=='webagent_page_status')return false;
+    sendResponse({version:'1.3.11',connected:isConnected,autoExecute:Boolean(CONFIG.autoExecute),autoSend:Boolean(CONFIG.autoSend),toolParse:lastToolParseStatus,autoSendStatus:lastAutoSendStatus});
+    return false;
+  });
 
   // =========================================================================
   // 10. 初始化启动与多阶段挂载守护
