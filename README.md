@@ -1,10 +1,17 @@
 # WebAgent (Web AI MCP Bridge)
 
-WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
+WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel/清言、Google AI Studio、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展与油猴脚本，提供原生浮动交互面板与本地 MCP 工具调度桥接。
 
 本项目由 [LINUX DO](https://linux.do) 社区认可。
 
-## 🆕 1.3.12 更新说明
+## 🆕 1.3.2 更新说明
+
+- 新增 **智谱开放平台体验中心（`bigmodel.cn` GLM-5.3）与智谱清言（`chatglm.cn`）** 网页端深度适配及专属主题。
+- 新增 **Google AI Studio（`aistudio.google.com`）** 原生适配，覆盖 Chat Prompt 与 Freeform 运行、中断与代码块解析。
+- 新增 **独立打包油猴脚本 `webagent.user.js`**，完整打包全部组件与模块，支持 Tampermonkey / Violentmonkey 一键安装。
+- 版本规范化进入 **1.3.2**，全套测试扩充至 **140 项** 并保持 100% 通过。
+
+## 1.3.12 更新说明
 
 - 新增独立的 **熔断保护** 开关，浏览器扩展弹窗和页面面板均可设置，默认开启，保存用户选择。
 - 连续工具调用默认上限由 **4 轮提高到 20 轮**；成功和失败都按实际调用计数，拒绝或取消不计数。
@@ -30,17 +37,22 @@ WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、ChatGPT、Kimi�
 
 ## 📦 安装使用指南
 
-1. 下载或克隆本项目到本地；
-2. 在 Chromium 内核浏览器（Chrome、Edge、Brave 等）中打开扩展程序管理页面：`chrome://extensions/`；
-3. 开启右上角「开发者模式」；
-4. 点击左上角「加载已解压的扩展程序」，选择本项目文件夹；
-5. 打开任意支持的网页大模型对话页面，页面顶部即可看到 WebAgent 浮动控制卡片。
-6. 在扩展弹窗填写本机 Nexus MCP 地址、已注册的项目 ID 和工作目录，然后检测连接。项目 ID 与工作目录默认留空，不预设任何用户项目。
-7. 更新扩展后需要重新加载扩展并刷新 AI 网页；先保存未提交草稿。此版本需加载完整扩展目录，不能仅将 content.js 作为独立油猴脚本安装。
+### 方式一：作为 Chromium 浏览器扩展安装（推荐）
+
+1. 在 Chromium 内核浏览器（Chrome、Edge、Brave 等）中打开扩展程序管理页面：`chrome://extensions/`（Edge 为 `edge://extensions/`）；
+2. 开启右上角「开发者模式」；
+3. 点击左上角「加载已解压的扩展程序」，选择本项目文件夹；
+4. 打开支持的 AI 网页（如智谱、AI Studio、DeepSeek、Gemini 等），即可看到 WebAgent 浮动卡片。
+
+### 方式二：作为油猴脚本安装（Tampermonkey / Violentmonkey）
+
+1. 本项目已生成独立的完整打包版脚本 **`webagent.user.js`**；
+2. 在 Tampermonkey 中点击「添加新脚本」，将 `webagent.user.js` 全文复制粘贴并保存，或直接拖拽到浏览器中安装；
+3. 脚本已自带全部适配器与模块，支持脚本管理器一键运行。
 
 ## 🌟 核心特性
 
-- **多模型原生适配**：DeepSeek、Gemini、ChatGPT、Kimi、通义千问 (Qwen)、豆包 (Doubao)、Duck.ai、Dola 等。
+- **多模型原生适配**：DeepSeek、Gemini、智谱 (BigModel / 清言)、Google AI Studio、ChatGPT、Kimi、通义千问 (Qwen)、豆包 (Doubao)、Duck.ai、Dola 等。
 - **本地 MCP 桥接**：支持标准 MCP 工具调用（文件读写、命令行运行、网页快照等）。
 - **极简交互设计**：自适应明暗主题、可自由拖拽位置与收起抽屉。
 - **用户可控自动化**：自动执行工具与自动发送结果是独立开关，记住用户选择；结果直接追加到发送栏，不覆盖已有草稿。
@@ -48,9 +60,7 @@ WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、ChatGPT、Kimi�
 - **本地权限设置**：项目文件与命令权限仅可从扩展弹窗确认修改，网页消息不能提升权限。
 - **隐私边界**：MCP 请求仅连接获准的本地 loopback 地址，不包含第三方遥测。工具结果回填到第三方 AI 网页后，网页可以读取它；请勿读取或回填凭证、密钥等敏感内容。
 
-
-
-## 🔧 配置与行为（1.3.12）
+## 🔧 配置与行为（1.3.2）
 
 默认服务基址为 `http://127.0.0.1:8787`，请求使用 `/mcp`；也支持配置允许的本机 18080 / 21888 端口。先运行 Nexus 并注册项目，在弹窗填写实际项目 ID，再检测连接。网页端账号由用户自行登录，不需要 DeepSeek / Gemini API Key；Gemini 指 `gemini.google.com`，不包括 Google AI Studio。
 

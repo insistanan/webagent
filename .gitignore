@@ -25,3 +25,8 @@ build/
 coverage/
 __pycache__/
 *.py[cod]
+
+# Userscripts (do not commit)
+*.user.js
+webagent.user.js
+

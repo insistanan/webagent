@@ -79,7 +79,7 @@
         !['tools/list', 'tools/call'].includes(payload.method)) throw new Error('Unsupported MCP request');
       const initId = 'webagent-init-' + crypto.randomUUID();
       const init = await send({jsonrpc: '2.0', id: initId, method: 'initialize', params: {
-        protocolVersion: protocol, capabilities: {}, clientInfo: {name: 'webagent', version: '1.3.12'}}});
+        protocolVersion: protocol, capabilities: {}, clientInfo: {name: 'webagent', version: '1.3.2'}}});
       // Record the session before parsing so protocol failures still clean it up.
       session = init.response.headers.get('Mcp-Session-Id') || '';
       const initialized = parseRpc(init.text, initId);

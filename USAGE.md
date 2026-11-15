@@ -1,4 +1,4 @@
-# WebAgent 1.3.12 使用指南
+# WebAgent 1.3.2 使用指南
 
 WebAgent 将网页 AI 提议的工具调用转交给本机 Nexus MCP，再把真实结果回填到 AI 对话发送栏。它不是 DeepSeek/Gemini API 客户端，也不能在未运行 Nexus 的情况下单独访问本机文件。
 
@@ -12,7 +12,7 @@ git clone https://github.com/ysunyang4/webagent.git
 ```
 
 3. Chrome 打开 `chrome://extensions/`，Edge 打开 `edge://extensions/`，开启开发者模式，加载解压后的 `webagent` 文件夹。选择的目录应包含 `manifest.json`、`content.js`、各辅助脚本和 `icons/`。
-4. 登录 [DeepSeek 网页端](https://chat.deepseek.com/) 或 [Gemini 网页端](https://gemini.google.com/)。不需要网页 AI 的 API Key；Gemini 支持范围不包含 Google AI Studio。
+4. 登录 [DeepSeek 网页端](https://chat.deepseek.com/)、[Gemini 网页端](https://gemini.google.com/)、[智谱体验中心/清言](https://bigmodel.cn/trialcenter/modeltrial/text?modelCode=glm-5.3) 或 [Google AI Studio](https://aistudio.google.com/)。不需要网页 AI 的 API Key。
 5. 点击浏览器工具栏中的 WebAgent 图标打开扩展弹窗。
 
 ## 2. 填写连接配置
@@ -94,7 +94,7 @@ git clone https://github.com/ysunyang4/webagent.git
 | 现象 | 检查方法 |
 | --- | --- |
 | Gemini 没有浮动面板 | 确认完整扩展已加载、浏览器允许扩展访问该站点，并在 `gemini.google.com` 保存草稿后刷新页面 |
-| 更新后仍报脚本失效/旧版本 | 先重载扩展，再刷新 AI 页面；打开弹窗检查网页版本是否为 1.3.12 |
+| 更新后仍报脚本失效/旧版本 | 先重载扩展，再刷新 AI 页面；打开弹窗检查网页版本是否为 1.3.2 |
 | MCP 未连接或 HTTP 401 | 确认 Nexus 已启动、端口正确；若启用认证，检查对应 Bridge Token，不要改用管理令牌 |
 | 项目权限未查询/项目 ID 错误 | 在 Nexus 中确认项目已注册，填写实际 ID，保存配置后重新检测握手 |
 | AI 一直说没有切换权限 | AI 本来就不能切换管理权限。由你在扩展弹窗应用权限后，让 AI 重新查询 nexus_project_info，不再引用旧对话状态 |

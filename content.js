@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         WebAgent 1.3.12 (Web AI MCP Bridge)
+// @name         WebAgent 1.3.2 (Web AI MCP Bridge)
 // @namespace    https://github.com/ysunyang4/webagent
-// @version      1.3.12
-// @description  WebAgent 1.3.12 本地扩展适配：DeepSeek / Gemini 等网页连接 Nexus MCP，文件与命令遵守项目权限，自动执行和自动发送由用户独立选择。
+// @version      1.3.2
+// @description  WebAgent 1.3.2 本地扩展适配：DeepSeek / Gemini / 智谱 / AI Studio 等网页连接 Nexus MCP，文件与命令遵守项目权限，自动执行和自动发送由用户独立选择。
 // @author       WebAgent Core
 // @match        https://gemini.google.com/*
 // @match        https://chat.deepseek.com/*
@@ -34,6 +34,11 @@
 // @match        https://www.dola.com/*
 // @match        https://dola.com/*
 // @match        https://*.dola.com/*
+// @match        https://bigmodel.cn/*
+// @match        https://*.bigmodel.cn/*
+// @match        https://chatglm.cn/*
+// @match        https://*.chatglm.cn/*
+// @match        https://aistudio.google.com/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest
@@ -44,6 +49,8 @@
 // @connect      localhost:18080
 // @connect      127.0.0.1:8787
 // @connect      localhost:8787
+// @connect      127.0.0.1:21888
+// @connect      localhost:21888
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -238,6 +245,7 @@
     const host = (window.location.hostname || "").toLowerCase();
     const href = (window.location.href || "").toLowerCase();
     if (host === "gemini.google.com") return "gemini";
+    if (host === "aistudio.google.com" || href.includes("aistudio.google.com")) return "aistudio";
     if (host.includes("chatgpt") || host.includes("openai") || href.includes("chatgpt.com") || href.includes("openai.com")) return "chatgpt";
     if (host.includes("deepseek") || href.includes("deepseek.com")) return "deepseek";
     if (host.includes("kimi") || host.includes("moonshot") || href.includes("kimi.ai") || href.includes("kimi.moonshot.cn") || href.includes("kimi.com")) return "kimi";
@@ -245,6 +253,7 @@
     if (host.includes("duck.ai") || host.includes("duckduckgo") || href.includes("duck.ai") || href.includes("duckduckgo.com")) return "duckai";
     if (host.includes("qwen") || host.includes("tongyi") || href.includes("qwen.ai") || href.includes("tongyi.aliyun.com")) return "qwen";
     if (host.includes("dola") || href.includes("dola.com")) return "dola";
+    if (host.includes("bigmodel.cn") || host.includes("chatglm") || href.includes("bigmodel.cn") || href.includes("chatglm.cn")) return "zhipu";
     return "unknown";
   }
 
@@ -253,7 +262,7 @@
 
   const THEMES = {
     gemini: {
-      name: 'Gemini', badgeTitle: 'Gemini × WebAgent 1.3.12', icon: '✦',
+      name: 'Gemini', badgeTitle: 'Gemini × WebAgent 1.3.2', icon: '✦',
       primaryColor: '#4285F4', primaryHover: '#3367D6', primaryRgb: '66, 133, 244',
       borderRadius: '14px', pillRadius: '24px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -261,7 +270,7 @@
     },
     chatgpt: {
       name: "ChatGPT",
-      badgeTitle: "ChatGPT × WebAgent 1.3.12",
+      badgeTitle: "ChatGPT × WebAgent 1.3.2",
       icon: "🎨",
       primaryColor: "#10A37F",
       primaryHover: "#0E8C6D",
@@ -273,7 +282,7 @@
     },
     deepseek: {
       name: "DeepSeek",
-      badgeTitle: "DeepSeek × WebAgent 1.3.12",
+      badgeTitle: "DeepSeek × WebAgent 1.3.2",
       icon: "🐳",
       primaryColor: "#4D6BFE",
       primaryHover: "#3B58E8",
@@ -285,7 +294,7 @@
     },
     kimi: {
       name: "Kimi",
-      badgeTitle: "Kimi × WebAgent 1.3.12",
+      badgeTitle: "Kimi × WebAgent 1.3.2",
       icon: "🌙",
       primaryColor: "#8B5CF6",
       primaryHover: "#7C3AED",
@@ -297,7 +306,7 @@
     },
     doubao: {
       name: "豆包",
-      badgeTitle: "豆包 × WebAgent 1.3.12",
+      badgeTitle: "豆包 × WebAgent 1.3.2",
       icon: "👧🏻",
       primaryColor: "#3370FF",
       primaryHover: "#1E5AF5",
@@ -309,7 +318,7 @@
     },
     duckai: {
       name: "Duck.ai",
-      badgeTitle: "Duck.ai × WebAgent 1.3.12",
+      badgeTitle: "Duck.ai × WebAgent 1.3.2",
       icon: "🦆",
       primaryColor: "#DE5833",
       primaryHover: "#C84B29",
@@ -321,7 +330,7 @@
     },
     qwen: {
       name: "通义千问",
-      badgeTitle: "Qwen × WebAgent 1.3.12",
+      badgeTitle: "Qwen × WebAgent 1.3.2",
       icon: "🟣",
       primaryColor: "#615CED",
       primaryHover: "#4F46E5",
@@ -333,7 +342,7 @@
     },
     dola: {
       name: "Dola",
-      badgeTitle: "Dola × WebAgent 1.3.12",
+      badgeTitle: "Dola × WebAgent 1.3.2",
       icon: "🌸",
       primaryColor: "#059669",
       primaryHover: "#047857",
@@ -342,6 +351,30 @@
       pillRadius: "24px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'PingFang SC', sans-serif",
       defaultPosition: { bottom: "28px", right: "28px" },
+    },
+    zhipu: {
+      name: "智谱",
+      badgeTitle: "智谱 × WebAgent 1.3.2",
+      icon: "⚡",
+      primaryColor: "#3478F6",
+      primaryHover: "#2563EB",
+      primaryRgb: "52, 120, 246",
+      borderRadius: "14px",
+      pillRadius: "24px",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+      defaultPosition: { bottom: "28px", right: "28px" },
+    },
+    aistudio: {
+      name: "AI Studio",
+      badgeTitle: "AI Studio × WebAgent 1.3.2",
+      icon: "🔮",
+      primaryColor: "#1A73E8",
+      primaryHover: "#1557B0",
+      primaryRgb: "26, 115, 232",
+      borderRadius: "14px",
+      pillRadius: "24px",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Google Sans', Roboto, sans-serif",
+      defaultPosition: { bottom: "84px", right: "28px" },
     },
   };
 
@@ -1207,6 +1240,227 @@
       getLastReplyText: () => {
         const el = ADAPTERS.dola.getLastReplyElement();
         return el ? (el.textContent || "") : "";
+      },
+    },
+
+    zhipu: {
+      getInput: () => {
+        return (
+          document.querySelector("textarea.el-textarea__inner") ||
+          document.querySelector("textarea[placeholder*='向我发指令']") ||
+          document.querySelector("textarea[placeholder*='输入你的问题']") ||
+          document.querySelector("textarea[placeholder*='跟我聊聊天']") ||
+          document.querySelector("textarea[placeholder*='和我聊聊天']") ||
+          document.querySelector("textarea[placeholder*='请输入']") ||
+          document.querySelector("textarea[placeholder*='输入']") ||
+          document.querySelector("div.input-box textarea") ||
+          document.querySelector("div.input-wrapper textarea") ||
+          document.querySelector("div[contenteditable='true']") ||
+          document.querySelector("textarea")
+        );
+      },
+      setValue: (el, val) => {
+        el.focus();
+        if (el.isContentEditable) {
+          const sel = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          const ok = document.execCommand("insertText", false, val);
+          if (!ok) {
+            el.innerText = val;
+            el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: val }));
+          }
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        } else {
+          const setter = Object.getOwnPropertyDescriptor((window.HTMLTextAreaElement || globalThis.HTMLTextAreaElement || HTMLTextAreaElement)?.prototype, "value")?.set;
+          if (setter) setter.call(el, val);
+          else el.value = val;
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        if (typeof recordUserGoal === "function" && val && !val.startsWith("【Nexus") && !val.startsWith("【WebAgent") && !val.startsWith("⚠️")) {
+          recordUserGoal(val);
+        }
+      },
+      getSendBtn: () => {
+        return (
+          document.querySelector(".icon-send2")?.closest("button, div[role='button'], div.cursor-pointer") ||
+          document.querySelector("button.el-button--primary:not([disabled])") ||
+          document.querySelector("div[class*='send']:not([disabled])") ||
+          document.querySelector("button[class*='send']:not([disabled])") ||
+          document.querySelector("button[aria-label*='发送']") ||
+          document.querySelector("div[role='button'][aria-label*='发送']") ||
+          document.querySelector("div.input-box .cursor-pointer") ||
+          document.querySelector("div.input-wrapper .cursor-pointer") ||
+          document.querySelector("button:has(svg)") ||
+          document.querySelector("div[role='button']:has(svg)")
+        );
+      },
+      isGenerating: () => {
+        return Boolean(
+          document.querySelector(".icon-stop") ||
+          document.querySelector(".icon-pause") ||
+          document.querySelector("button[aria-label*='停止']") ||
+          document.querySelector("button:has(i[class*='stop'])") ||
+          document.querySelector("button:has(i[class*='pause'])") ||
+          document.querySelector("div[class*='stop']") ||
+          document.querySelector(".is-loading") ||
+          document.querySelector(".el-loading-mask") ||
+          document.querySelector("button:has(svg rect)")
+        );
+      },
+      getLastReplyElement: () => {
+        const assistantMsgs = Array.from(document.querySelectorAll(
+          ".markdown-body, .chat-content, .message-content, .answer-content, div[class*='answer'], div[class*='bot-message'], div[class*='markdown'], div[class*='message-item']:not([class*='user'])"
+        )).filter(el => !el.closest?.("[class*='user'], [data-role='user'], .question-item, .user-message"));
+
+        if (assistantMsgs.length > 0) {
+          const lastMsg = assistantMsgs[assistantMsgs.length - 1];
+          const pres = lastMsg.querySelectorAll("pre, code-block, code");
+          if (pres.length > 0) {
+            for (let i = pres.length - 1; i >= 0; i--) {
+              const t = pres[i].textContent || "";
+              if (t.includes('"tool"') || t.includes('"action"') || t.includes('"name"')) {
+                return pres[i];
+              }
+            }
+            return pres[pres.length - 1];
+          }
+          return lastMsg;
+        }
+        return null;
+      },
+      getLastReplyText: () => {
+        const pres = document.querySelectorAll("pre, code-block, code");
+        if (pres.length > 0) {
+          for (let i = pres.length - 1; i >= 0; i--) {
+            const preTxt = (pres[i].textContent || "").trim();
+            if (preTxt.includes('"tool"') || preTxt.includes("'tool'") || preTxt.includes('"name"') || preTxt.includes('"command"')) {
+              return preTxt;
+            }
+          }
+        }
+        const el = ADAPTERS.zhipu.getLastReplyElement();
+        if (!el) return "";
+        try {
+          const clone = el.cloneNode(true);
+          const thinkEls = clone.querySelectorAll("[class*='think'], [class*='thought'], [class*='reasoning'], model-thoughts, details");
+          thinkEls.forEach(node => node.remove());
+          return (clone.textContent || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        } catch {
+          return (el.textContent || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        }
+      },
+    },
+
+    aistudio: {
+      getInput: () => {
+        return (
+          document.querySelector("ms-autosize-textarea textarea") ||
+          document.querySelector(".chat-prompt-textarea textarea") ||
+          document.querySelector("textarea.prompt-textarea") ||
+          document.querySelector("textarea[aria-label*='Prompt']") ||
+          document.querySelector("textarea[aria-label*='Message']") ||
+          document.querySelector("textarea[placeholder*='Type']") ||
+          document.querySelector("textarea[placeholder*='prompt']") ||
+          document.querySelector("textarea[placeholder*='Prompt']") ||
+          document.querySelector("textarea.textarea") ||
+          document.querySelector("div[contenteditable='true']") ||
+          document.querySelector("textarea")
+        );
+      },
+      setValue: (el, val) => {
+        el.focus();
+        if (el.isContentEditable) {
+          const sel = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          sel.removeAllRanges();
+          sel.addRange(range);
+          const ok = document.execCommand("insertText", false, val);
+          if (!ok) {
+            el.innerText = val;
+            el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: val }));
+          }
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        } else {
+          const setter = Object.getOwnPropertyDescriptor((window.HTMLTextAreaElement || globalThis.HTMLTextAreaElement || HTMLTextAreaElement)?.prototype, "value")?.set;
+          if (setter) setter.call(el, val);
+          else el.value = val;
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          el.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        if (typeof recordUserGoal === "function" && val && !val.startsWith("【Nexus") && !val.startsWith("【WebAgent") && !val.startsWith("⚠️")) {
+          recordUserGoal(val);
+        }
+      },
+      getSendBtn: () => {
+        return (
+          document.querySelector("button.run-button:not([disabled])") ||
+          document.querySelector("button[aria-label*='Run']:not([disabled])") ||
+          document.querySelector("button[aria-label*='Execute']:not([disabled])") ||
+          document.querySelector("button:has(mat-icon[fonticon='play_arrow']):not([disabled])") ||
+          document.querySelector(".run-button-container button:not([disabled])") ||
+          document.querySelector("button.mat-mdc-unelevated-button:not([disabled])") ||
+          document.querySelector("button[type='submit']:not([disabled])") ||
+          document.querySelector("button:has(svg):not([disabled])")
+        );
+      },
+      isGenerating: () => {
+        return Boolean(
+          document.querySelector("button.stop-button") ||
+          document.querySelector("button[aria-label*='Cancel']") ||
+          document.querySelector("button[aria-label*='Stop']") ||
+          document.querySelector("button:has(mat-icon[fonticon='stop'])") ||
+          document.querySelector("mat-progress-bar") ||
+          document.querySelector("mat-spinner") ||
+          document.querySelector(".is-running") ||
+          document.querySelector(".loading")
+        );
+      },
+      getLastReplyElement: () => {
+        const turns = Array.from(document.querySelectorAll(
+          "ms-chat-turn:not(.user-turn):not([data-turn-role='user']), ms-chat-turn.model-turn, div.model-response, div.chat-turn-content, ms-markdown, div[class*='model-turn'], div[class*='response']"
+        )).filter(el => !el.closest?.(".user-turn, [data-turn-role='user'], [class*='user']"));
+
+        if (turns.length > 0) {
+          const last = turns[turns.length - 1];
+          const pres = last.querySelectorAll("pre, code, ms-code-block");
+          if (pres.length > 0) {
+            for (let i = pres.length - 1; i >= 0; i--) {
+              const t = pres[i].textContent || "";
+              if (t.includes('"tool"') || t.includes('"action"') || t.includes('"name"')) return pres[i];
+            }
+            return pres[pres.length - 1];
+          }
+          return last;
+        }
+        return null;
+      },
+      getLastReplyText: () => {
+        const pres = document.querySelectorAll("pre, code, ms-code-block");
+        if (pres.length > 0) {
+          for (let i = pres.length - 1; i >= 0; i--) {
+            const preTxt = (pres[i].textContent || "").trim();
+            if (preTxt.includes('"tool"') || preTxt.includes("'tool'") || preTxt.includes('"name"') || preTxt.includes('"command"')) {
+              return preTxt;
+            }
+          }
+        }
+        const el = ADAPTERS.aistudio.getLastReplyElement();
+        if (!el) return "";
+        try {
+          const clone = el.cloneNode(true);
+          const thinkEls = clone.querySelectorAll("[class*='thought'], [class*='reasoning'], model-thoughts, details");
+          thinkEls.forEach(node => node.remove());
+          return (clone.textContent || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        } catch {
+          return (el.textContent || "").replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+        }
       },
     },
   };
@@ -2689,7 +2943,7 @@
       if (ok) {
         setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator online"></span><span>Nexus MCP 服务就绪</span></span><span class="nexus-status-ping">${pingMs || 70}ms</span>`);
       } else {
-        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.12</span>`);
+        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.2</span>`);
       }
     }
   }
@@ -2923,7 +3177,7 @@
       <div class="nexus-drawer-head" id="nexus-head-main">
         <div class="nexus-drawer-title">
           ${nxSvg("sparkle", "nexus-ui-icon", "color: var(--nx-primary); margin-right: 6px;")}
-          <span>${CURRENT_THEME.name} × WebAgent 1.3.12</span>
+          <span>${CURRENT_THEME.name} × WebAgent 1.3.2</span>
         </div>
         <div class="nexus-head-actions">
           <button class="nexus-theme-btn-quick" id="nexus-open-settings" title="打开设置中心">${nxSvg("gear", "nexus-icon-btn")}</button>
@@ -3000,7 +3254,7 @@
       <div id="nexus-view-settings" class="nexus-view-container" style="display: none;">
         <!-- 服务状态指示条 -->
         <div class="nexus-status-bar" id="nexus-status-bar">
-          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.12 MCP 网关...</span></span>
+          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.2 MCP 网关...</span></span>
         </div>
 
         <!-- 默认工作目录 -->
@@ -3259,7 +3513,7 @@
         currentAdapter.setValue(inputEl, promptText);
         pill.classList.remove("open");
         drawerEl.classList.remove("show");
-        showToast(`已填入 WebAgent 1.3.12 协作协议，请点击发送！`);
+        showToast(`已填入 WebAgent 1.3.2 协作协议，请点击发送！`);
       });
     }
 
@@ -3873,7 +4127,7 @@
       checkAndHandleRateLimitError();
 
       // 各大平台专属：检查并自动处理跨会话断点无缝续传
-      if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
+      if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola" || PLATFORM === "zhipu" || PLATFORM === "aistudio") {
         checkAndResumeHandover();
       }
 
@@ -3900,7 +4154,7 @@
 
       // 连续 3 帧 (1.5秒) 确认回复文本已彻底稳定终止
       if (lastStableTicks >= 3) {
-        if ((PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") && lastStableTicks === 3) {
+        if ((PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola" || PLATFORM === "zhipu" || PLATFORM === "aistudio") && lastStableTicks === 3) {
           console.log(`[Nexus ${CURRENT_THEME.name}] 回复稳定完毕，正在检索工具调用代码块...`, {
             textLen: currentText.length,
             hasPre: Boolean(document.querySelector("pre")),
@@ -3908,7 +4162,7 @@
         }
 
         // 检测是否因会话过长触发“达到对话长度上限”
-        if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
+        if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola" || PLATFORM === "zhipu" || PLATFORM === "aistudio") {
           if (detectContextLimitReached()) {
             triggerContextLimitHandover();
             return;
@@ -3942,7 +4196,7 @@
         }
 
         if (toolCall) {
-          if (PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
+          if (PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola" || PLATFORM === "zhipu" || PLATFORM === "aistudio") {
             console.log(`[Nexus ${CURRENT_THEME.name}] 🎯 成功捕获工具调用代码块:`, toolCall);
           }
           lastHandledMessageSignature = sig;
@@ -3952,7 +4206,7 @@
           showToast(lastToolParseStatus.status==='incomplete'
             ? 'MCP 命令内容被截断，未执行；请让 AI 重新输出完整 JSON（不会猜补代码）'
             : 'MCP 命令 JSON 格式仍有错误，未执行；请让 AI 重新输出完整 JSON');
-        } else if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
+        } else if (PLATFORM === "deepseek" || PLATFORM === "kimi" || PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola" || PLATFORM === "zhipu" || PLATFORM === "aistudio") {
           // 没有解析出有效工具，检查是否是未闭合的残缺截断代码块
           const truncatedSnippet = detectTruncatedCodeBlock(currentText, lastNode);
           if (truncatedSnippet && !danglingBlockState.isWaitingContinuation) {
@@ -4161,7 +4415,7 @@
         if (dataStr.length > 3500) {
           dataStr = dataStr.slice(0, 2200) + "\n\n... [⚠️ 执行返回结果过长 (共 " + dataStr.length + " 字符)，已智能截取首尾关键数据以节省 Token] ...\n\n" + dataStr.slice(-1000);
         }
-        feedbackText = "【WebAgent 1.3.12 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
+        feedbackText = "【WebAgent 1.3.2 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
       } else {
         if (safetyGeneration === reActSafetyGeneration) {
           consecutiveErrors++;
@@ -4173,7 +4427,7 @@
             showToast('❌ 连续 5 次工具调用失败，熔断保护已暂停；本次错误仍会回填');
           }
         }
-        feedbackText = `【WebAgent 1.3.12 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请如实报告失败，严格遵守用户本次授权范围。若用户限定只调用一次，或下一步需要新增操作/权限，必须停止并等待用户；不得擅自扩大范围或重复副作用调用。）`;
+        feedbackText = `【WebAgent 1.3.2 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请如实报告失败，严格遵守用户本次授权范围。若用户限定只调用一次，或下一步需要新增操作/权限，必须停止并等待用户；不得擅自扩大范围或重复副作用调用。）`;
       }
 
       if (!res.ok && CONFIG.circuitBreaker !== false && isAutoDispatchSuspended && safetyGeneration === reActSafetyGeneration) {
@@ -4223,7 +4477,7 @@
   // Read-only popup diagnostics: version and user switches only, no credentials.
   if(extensionContextAtLoad)chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
     if(sender.id!==chrome.runtime.id || request?.action!=='webagent_page_status')return false;
-    sendResponse({version:'1.3.12',connected:isConnected,autoExecute:Boolean(CONFIG.autoExecute),autoSend:Boolean(CONFIG.autoSend),circuitBreaker:CONFIG.circuitBreaker !== false,maxConsecutiveSteps:CONFIG.maxConsecutiveSteps,toolCallRounds:consecutiveAutoDispatches,suspended:isAutoDispatchSuspended,toolParse:lastToolParseStatus,autoSendStatus:lastAutoSendStatus});
+    sendResponse({version:'1.3.2',connected:isConnected,autoExecute:Boolean(CONFIG.autoExecute),autoSend:Boolean(CONFIG.autoSend),circuitBreaker:CONFIG.circuitBreaker !== false,maxConsecutiveSteps:CONFIG.maxConsecutiveSteps,toolCallRounds:consecutiveAutoDispatches,suspended:isAutoDispatchSuspended,toolParse:lastToolParseStatus,autoSendStatus:lastAutoSendStatus});
     return false;
   });
 

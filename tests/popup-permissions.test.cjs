@@ -90,7 +90,7 @@ test('popup shows matched page version and actual auto-send state without resett
   assert.match(p.elements.pageVersionStatus.textContent,new RegExp('网页 '+version.replaceAll('.','\\.')+'.*MCP 在线.*自动发送开启'));assert.equal(p.writes.length,0);assert.equal(p.elements.autoSendToggle.checked,true);
 });
 test('version mismatch, cancelled refresh and unrelated tabs never reload automatically',async()=>{
-  let reloads=0;const tabs={query:async()=>[{id:9,url:'https://chat.deepseek.com/'}],sendMessage:async()=>({version:'1.3.2'}),reload:async()=>reloads++};
+  let reloads=0;const tabs={query:async()=>[{id:9,url:'https://chat.deepseek.com/'}],sendMessage:async()=>({version:'1.3.1'}),reload:async()=>reloads++};
   const p=await popup({tabs,confirm:false});assert.match(p.elements.pageVersionStatus.textContent,/旧脚本/);await p.click('reloadPageBtn');assert.equal(reloads,0);
   const unrelated=await popup({tabs:{...tabs,query:async()=>[{id:10,url:'https://example.org/'}]}});assert.equal(unrelated.elements.reloadPageBtn.disabled,true);assert.match(unrelated.elements.pageVersionStatus.textContent,/AI 标签页/);assert.equal(reloads,0);
 });
