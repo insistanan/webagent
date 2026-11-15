@@ -107,3 +107,20 @@ test('upstream distribution has no preconfigured project or personal workspace',
   assert.match(script,/webagent_workspace_dir: '', webagent_project_id: ''/);
   assert.equal(/proj_[0-9a-f-]{36}|杂活文件|本地agent/.test(script),false);
 });
+
+test('popup exposes default enabled breaker with 20 rounds, persisting user opt-out independently',async()=>{
+  const p=await popup({saved:{webagent_auto_execute:true,webagent_auto_send:true}});assert.equal(p.elements.circuitBreakerToggle.checked,true);
+  p.elements.circuitBreakerToggle.checked=false;await p.click('saveConfigBtn');assert.equal(p.saved.webagent_circuit_breaker,false);assert.equal(p.saved.webagent_max_consecutive_steps,20);
+  assert.equal(p.saved.webagent_auto_execute,true);assert.equal(p.saved.webagent_auto_send,true);assert.match(p.confirms[0],/关闭熔断保护/);
+  const restored=await popup({saved:{webagent_circuit_breaker:false}});assert.equal(restored.elements.circuitBreakerToggle.checked,false);
+  restored.elements.circuitBreakerToggle.checked=true;await restored.click('saveConfigBtn');assert.equal(restored.saved.webagent_circuit_breaker,true);assert.equal(restored.confirms.length,0);
+});
+test('declining breaker opt-out saves nothing and does not reset any user switches',async()=>{
+  const p=await popup({confirm:false});p.elements.circuitBreakerToggle.checked=false;await p.click('saveConfigBtn');
+  assert.equal(p.writes.length,0);assert.equal(p.saved.webagent_circuit_breaker,undefined);assert.equal(p.saved.webagent_auto_execute,false);assert.equal(p.elements.circuitBreakerToggle.checked,true);
+});
+test('popup diagnostics show breaker and pause state, and copied protocol describes the limit without secrets',async()=>{
+  const tabs={query:async()=>[{id:8,url:'https://gemini.google.com/app/test'}],sendMessage:async()=>({version,connected:true,autoSend:false,circuitBreaker:true,maxConsecutiveSteps:20,suspended:true})};
+  const p=await popup({tabs});assert.match(p.elements.pageVersionStatus.textContent,/熔断开启.*20 轮.*已暂停/);
+  await p.click('injectPromptBtn');assert.match(p.copies[0],/熔断保护=true.*20 轮/);assert.ok(!p.copies[0].includes('fake-'));
+});

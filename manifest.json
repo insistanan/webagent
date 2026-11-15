@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "WebAgent 1.3.11 (Web AI MCP Bridge)",
-  "version": "1.3.11",
+  "name": "WebAgent 1.3.12 (Web AI MCP Bridge)",
+  "version": "1.3.12",
   "description": "通过用户可控的自动执行和自动发送，将 DeepSeek / Gemini 等网页 AI 连接本地 Nexus MCP；工具操作遵守项目权限。",
   "permissions": [
     "storage",

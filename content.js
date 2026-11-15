@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         WebAgent 1.3.11 (Web AI MCP Bridge)
+// @name         WebAgent 1.3.12 (Web AI MCP Bridge)
 // @namespace    https://github.com/ysunyang4/webagent
-// @version      1.3.11
-// @description  WebAgent 1.3.11 本地扩展适配：DeepSeek / Gemini 等网页连接 Nexus MCP，文件与命令遵守项目权限，自动执行和自动发送由用户独立选择。
+// @version      1.3.12
+// @description  WebAgent 1.3.12 本地扩展适配：DeepSeek / Gemini 等网页连接 Nexus MCP，文件与命令遵守项目权限，自动执行和自动发送由用户独立选择。
 // @author       WebAgent Core
 // @match        https://gemini.google.com/*
 // @match        https://chat.deepseek.com/*
@@ -107,14 +107,17 @@
         if (area !== 'local') return;
         const fields = {webagent_bridge_url: 'nexusUrl', webagent_workspace_dir: 'workspace',
           webagent_project_id: 'projectId', webagent_auto_execute: 'autoExecute', webagent_auto_send: 'autoSend',
-          webagent_auto_retry_rate_limit: 'autoRetry', webagent_review_safe_mode: 'reviewSafeMode'};
+          webagent_auto_retry_rate_limit: 'autoRetry', webagent_review_safe_mode: 'reviewSafeMode',
+          webagent_circuit_breaker: 'circuitBreaker', webagent_max_consecutive_steps: 'maxConsecutiveSteps'};
         for (const [key, change] of Object.entries(changes)) {
           if (['webagent_management_token','webagent_lb_token','nexus_lb_token'].includes(key)) continue;
           extensionValues[key] = change.newValue;
           if (fields[key] && typeof CONFIG !== 'undefined') {
-            CONFIG[fields[key]] = change.newValue;
-            const id={webagent_auto_execute:'nexus-cfg-auto',webagent_auto_send:'nexus-cfg-send'}[key];
-            if(id){const control=document.querySelector('#nexus-agent-root #'+id);if(control)control.checked=Boolean(change.newValue);}
+            if(key === 'webagent_circuit_breaker') setCircuitBreakerEnabled(change.newValue);
+            else if(key === 'webagent_max_consecutive_steps') CONFIG.maxConsecutiveSteps = Math.max(20, parseInt(change.newValue, 10) || 20);
+            else CONFIG[fields[key]] = change.newValue;
+            const id={webagent_auto_execute:'nexus-cfg-auto',webagent_auto_send:'nexus-cfg-send',webagent_circuit_breaker:'nexus-cfg-breaker'}[key];
+            if(id){const control=document.querySelector('#nexus-agent-root #'+id);if(control)control.checked=key==='webagent_circuit_breaker'?CONFIG.circuitBreaker:Boolean(change.newValue);}
           }
         }
       });
@@ -250,7 +253,7 @@
 
   const THEMES = {
     gemini: {
-      name: 'Gemini', badgeTitle: 'Gemini × WebAgent 1.3.11', icon: '✦',
+      name: 'Gemini', badgeTitle: 'Gemini × WebAgent 1.3.12', icon: '✦',
       primaryColor: '#4285F4', primaryHover: '#3367D6', primaryRgb: '66, 133, 244',
       borderRadius: '14px', pillRadius: '24px',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -258,7 +261,7 @@
     },
     chatgpt: {
       name: "ChatGPT",
-      badgeTitle: "ChatGPT × WebAgent 1.3.11",
+      badgeTitle: "ChatGPT × WebAgent 1.3.12",
       icon: "🎨",
       primaryColor: "#10A37F",
       primaryHover: "#0E8C6D",
@@ -270,7 +273,7 @@
     },
     deepseek: {
       name: "DeepSeek",
-      badgeTitle: "DeepSeek × WebAgent 1.3.11",
+      badgeTitle: "DeepSeek × WebAgent 1.3.12",
       icon: "🐳",
       primaryColor: "#4D6BFE",
       primaryHover: "#3B58E8",
@@ -282,7 +285,7 @@
     },
     kimi: {
       name: "Kimi",
-      badgeTitle: "Kimi × WebAgent 1.3.11",
+      badgeTitle: "Kimi × WebAgent 1.3.12",
       icon: "🌙",
       primaryColor: "#8B5CF6",
       primaryHover: "#7C3AED",
@@ -294,7 +297,7 @@
     },
     doubao: {
       name: "豆包",
-      badgeTitle: "豆包 × WebAgent 1.3.11",
+      badgeTitle: "豆包 × WebAgent 1.3.12",
       icon: "👧🏻",
       primaryColor: "#3370FF",
       primaryHover: "#1E5AF5",
@@ -306,7 +309,7 @@
     },
     duckai: {
       name: "Duck.ai",
-      badgeTitle: "Duck.ai × WebAgent 1.3.11",
+      badgeTitle: "Duck.ai × WebAgent 1.3.12",
       icon: "🦆",
       primaryColor: "#DE5833",
       primaryHover: "#C84B29",
@@ -318,7 +321,7 @@
     },
     qwen: {
       name: "通义千问",
-      badgeTitle: "Qwen × WebAgent 1.3.11",
+      badgeTitle: "Qwen × WebAgent 1.3.12",
       icon: "🟣",
       primaryColor: "#615CED",
       primaryHover: "#4F46E5",
@@ -330,7 +333,7 @@
     },
     dola: {
       name: "Dola",
-      badgeTitle: "Dola × WebAgent 1.3.11",
+      badgeTitle: "Dola × WebAgent 1.3.12",
       icon: "🌸",
       primaryColor: "#059669",
       primaryHover: "#047857",
@@ -642,7 +645,8 @@
     projectId: GM_getValue("webagent_project_id", GM_getValue("nexus_project_id", "")),
     autoExecute: GM_getValue("webagent_auto_execute", false),
     autoSend: GM_getValue("webagent_auto_send", false),
-    maxConsecutiveSteps: GM_getValue("webagent_max_consecutive_steps", 4),
+    circuitBreaker: GM_getValue("webagent_circuit_breaker", true) !== false,
+    maxConsecutiveSteps: Math.max(20, parseInt(GM_getValue("webagent_max_consecutive_steps", 20), 10) || 20),
     sendDelay: GM_getValue("webagent_send_delay", 3.0),
     autoRetry: GM_getValue("webagent_auto_retry_rate_limit", false),
     themeMode: GM_getValue("webagent_theme_mode", "auto"), // "auto" | "light" | "dark"
@@ -730,11 +734,7 @@
         }
         el.dispatchEvent(new Event("input", { bubbles: true }));
         el.dispatchEvent(new Event("change", { bubbles: true }));
-        if (typeof recordUserGoal === "function" && val && !val.startsWith("【Nexus") && !val.startsWith("【WebAgent") && !val.startsWith("⚠️")) {
-          recordUserGoal(val);
-          consecutiveAutoDispatches = 0;
-          consecutiveErrors = 0;
-        }
+        // Draft writes do not reset task budgets; only a trusted submission does.
       },
       getSendBtn: () => {
         return (
@@ -2646,6 +2646,7 @@
       '你可以通过 WebAgent 提议使用本地 Nexus MCP，但你不能直接访问本机。',
       '每次只输出一个 nexus 代码块；扩展根据用户开关逐次确认或自动执行、回填或自动发送。不要编造执行结果。',
       '用户设置：自动执行='+Boolean(CONFIG.autoExecute)+'；自动发送工具结果='+Boolean(CONFIG.autoSend)+'。不要自行改变这些设置。',
+      '熔断保护='+(CONFIG.circuitBreaker !== false)+'；开启时连续工具调用上限 '+CONFIG.maxConsecutiveSteps+' 轮，关闭时不按轮次/重复结果/连续失败暂停。开关仅由用户选择。',
       '长代码也必须是完整合法 JSON：content 中的换行、双引号和反斜杠按 JSON 字符串规则转义；不得省略、截断或用“...”代替源码。',
       "调用输出规范：只有确实需要工具时才输出一个 nexus 代码块；代码块内必须只有一个完整 JSON 对象，禁止说明文字、JSON 注释、尾逗号、JSON5 或多个调用。",
       "字段规范：tool 必须是已发现的真实工具名；arguments 必须是对象，字段和类型严格遵守工具 schema。文件源码只能放在 schema 指定的字符串字段（如 content），不得直接拼接裸 HTML/JS。",
@@ -2688,7 +2689,7 @@
       if (ok) {
         setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator online"></span><span>Nexus MCP 服务就绪</span></span><span class="nexus-status-ping">${pingMs || 70}ms</span>`);
       } else {
-        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.11</span>`);
+        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.12</span>`);
       }
     }
   }
@@ -2922,7 +2923,7 @@
       <div class="nexus-drawer-head" id="nexus-head-main">
         <div class="nexus-drawer-title">
           ${nxSvg("sparkle", "nexus-ui-icon", "color: var(--nx-primary); margin-right: 6px;")}
-          <span>${CURRENT_THEME.name} × WebAgent 1.3.11</span>
+          <span>${CURRENT_THEME.name} × WebAgent 1.3.12</span>
         </div>
         <div class="nexus-head-actions">
           <button class="nexus-theme-btn-quick" id="nexus-open-settings" title="打开设置中心">${nxSvg("gear", "nexus-icon-btn")}</button>
@@ -2999,7 +3000,7 @@
       <div id="nexus-view-settings" class="nexus-view-container" style="display: none;">
         <!-- 服务状态指示条 -->
         <div class="nexus-status-bar" id="nexus-status-bar">
-          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.11 MCP 网关...</span></span>
+          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.12 MCP 网关...</span></span>
         </div>
 
         <!-- 默认工作目录 -->
@@ -3031,6 +3032,12 @@
         <div class="nexus-switch-row">
           <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary);">自动发送结果（包含发送栏已有草稿）</span>
           <label class="nexus-switch"><input type="checkbox" id="nexus-cfg-send" ${CONFIG.autoSend ? "checked" : ""}><span class="nexus-slider"></span></label>
+        </div>
+
+        <!-- 独立熔断开关，不改变执行、发送或项目权限 -->
+        <div class="nexus-switch-row">
+          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary);">熔断保护（20 轮上限 / 重复结果 / 连续失败）</span>
+          <label class="nexus-switch"><input type="checkbox" id="nexus-cfg-breaker" ${CONFIG.circuitBreaker !== false ? "checked" : ""}><span class="nexus-slider"></span></label>
         </div>
 
         <!-- 发送延迟安全缓冲与防风控 -->
@@ -3252,7 +3259,7 @@
         currentAdapter.setValue(inputEl, promptText);
         pill.classList.remove("open");
         drawerEl.classList.remove("show");
-        showToast(`已填入 WebAgent 1.3.11 协作协议，请点击发送！`);
+        showToast(`已填入 WebAgent 1.3.12 协作协议，请点击发送！`);
       });
     }
 
@@ -3281,8 +3288,6 @@
 
     function executeEngAction(action) {
       const inputEl = currentAdapter.getInput();
-      consecutiveAutoDispatches = 0;
-      consecutiveErrors = 0;
 
       if (action === "browser") {
         if (inputEl) {
@@ -3394,6 +3399,16 @@
       if(e.target.checked && !CONFIG.autoSend && !confirm('开启后，工具结果及发送栏已有草稿将自动提交给当前网页 AI。确认开启？')){e.target.checked=false;return;}
       CONFIG.autoSend=e.target.checked;GM_setValue('webagent_auto_send',CONFIG.autoSend);
       showToast('自动发送已'+(CONFIG.autoSend?'开启':'关闭'));
+    });
+
+    // 独立熔断设置：关闭会解除已熔断状态，重新开启从新的 20 轮预算开始。
+    const breakerBox = drawerEl.querySelector('#nexus-cfg-breaker');
+    if(breakerBox)breakerBox.addEventListener('change',e=>{
+      if(!e.isTrusted){e.target.checked=CONFIG.circuitBreaker !== false;return;}
+      if(!e.target.checked && CONFIG.circuitBreaker !== false && !confirm('关闭熔断保护后，不再按轮次、重复结果或连续失败暂停，可能持续调用并产生费用或副作用。自动执行、自动发送和项目权限不变。确认关闭？')){e.target.checked=true;return;}
+      setCircuitBreakerEnabled(e.target.checked);
+      GM_setValue('webagent_circuit_breaker',CONFIG.circuitBreaker);
+      showToast(CONFIG.circuitBreaker?'熔断保护已开启，连续调用上限 20 轮':'熔断保护已关闭（不会改变自动执行或自动发送）');
     });
 
     // 9. 设置项：自动发送延迟缓冲滑动条
@@ -3642,7 +3657,7 @@
 
   function recordUserGoal(goalText) {
     try {
-      if (!goalText || goalText.length < 5) return;
+      if (!goalText || !goalText.trim()) return;
       if ((goalText.startsWith("【Nexus") || goalText.startsWith("【WebAgent")) || goalText.startsWith("⚠️ 检测到上一条回复") || goalText.startsWith("【系统自愈")) return;
       const state = getHandoverState();
       state.lastUserGoal = goalText.replace(/\s+/g, " ").slice(0, 200);
@@ -3816,23 +3831,7 @@
   // 9. 核心 ReAct 自动观察、防频繁安全缓冲与回填执行循环
   // =========================================================================
   
-  // 全局键盘监听：当用户在输入框敲击 Enter 时精准记录用户意图目标
-  if (typeof document !== "undefined") {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey && e.isTrusted) {
-        try {
-          const input = currentAdapter ? currentAdapter.getInput() : null;
-          if (input && (input.value || input.innerText)) {
-            const val = (input.value || input.innerText).trim();
-            if (val && !val.startsWith("【Nexus") && !val.startsWith("【WebAgent") && typeof recordUserGoal === "function") {
-              recordUserGoal(val);
-            }
-          }
-        } catch (_) {}
-      }
-    }, true);
-  }
-
+  // Task budgets reset only for trusted submissions targeting the actual editor.
   function startReActLoop() {
     let lastStableTicks = 0;
     let prevText = "", loopRoute=location.href;
@@ -4010,15 +4009,27 @@
   let consecutiveAutoDispatches = 0;
   let consecutiveErrors = 0;
   let lastExecutedToolSig = "";
+  let lastExecutedResultSig = "";
   let duplicateToolCallCount = 0;
   let isAutoDispatchSuspended = false;
+  let reActSafetyGeneration = 0;
 
   function resetReActSafetyState() {
+    reActSafetyGeneration++;
     consecutiveAutoDispatches = 0;
     consecutiveErrors = 0;
     lastExecutedToolSig = "";
+    lastExecutedResultSig = "";
     duplicateToolCallCount = 0;
     isAutoDispatchSuspended = false;
+  }
+
+  function setCircuitBreakerEnabled(enabled) {
+    enabled = enabled !== false;
+    if (CONFIG.circuitBreaker === enabled) return;
+    CONFIG.circuitBreaker = enabled;
+    // A user switch starts a fresh budget; it never enables execution or sending.
+    resetReActSafetyState();
   }
 
   async function handleToolCallAutomatically(toolCall) {
@@ -4029,55 +4040,52 @@
       }
     }
 
-    if (isAutoDispatchSuspended) {
-      showToast("⏸️ 连续调度已安全熔断暂停，请手动发送指令或点击面板恢复");
+    if (CONFIG.circuitBreaker !== false && isAutoDispatchSuspended) {
+      showToast('⏸️ 熔断保护已暂停调度，可手动发送新任务，或由你关闭熔断保护');
       return;
     }
 
-    // 严格工具白名单防死循环机制：非合法工具绝不执行、绝不向对话回填错误
+    // The switch never disables tool validation or Nexus project permissions.
     if (!isLikelyValidTool(toolCall.tool)) {
-      console.warn(`[Nexus Web Agent] 忽略非合法 MCP 工具调用:`, toolCall.tool);
-      showToast(`⚠️ 忽略非 Nexus MCP 工具调用 [${toolCall.tool}]，已阻止无效循环`);
+      console.warn('[Nexus Web Agent] 忽略非合法 MCP 工具调用:', toolCall.tool);
+      showToast('⚠️ 无效工具调用，未执行');
       return;
     }
-
-    // 1. 重复调用熔断器：同一工具与相同参数连续重复调用立即熔断拦截
-    const currentCallSig = `${toolCall.tool}::${JSON.stringify(toolCall.args || {})}`;
-    if (currentCallSig === lastExecutedToolSig) {
-      duplicateToolCallCount++;
-      // 允许连续推进（如连续刷视频、滚动翻页），仅在连续 3 次相同且页面无变化时温和提醒
-      if (duplicateToolCallCount >= 3) {
-        showToast(`⏸️ 连续 3 次执行相同操作 [${toolCall.tool}]，已温和暂停以防卡死`);
-        duplicateToolCallCount = 0;
-        lastExecutedToolSig = "";
+    const currentCallSig = toolCall.tool + '::' + JSON.stringify(toolCall.args || {});
+    if (CONFIG.circuitBreaker !== false) {
+      // Only completed successes with equal arguments AND equal results repeat.
+      // Polling/scrolling with changing results is progress, not a duplicate loop.
+      if (currentCallSig === lastExecutedToolSig && duplicateToolCallCount >= 2) {
         isAutoDispatchSuspended = true;
-        const terminationNotice = "【WebAgent 智能防护提醒】\n- 检测到连续多次执行完全相同的操作与参数 [" + toolCall.tool + "]。\n- 为防止不必要的循环与 Token 浪费，自动化调度已温和暂停。\n- 请像人类一样，转用自然语言向用户总结汇报当前进度与屏幕所见，或询问用户下一步意图。";
-        safeDispatchFeedbackToChat(terminationNotice, toolCall.tool);
+        showToast('⏸️ 连续 3 次相同调用返回相同结果，熔断保护已暂停');
+        safeDispatchFeedbackToChat('【WebAgent 熔断保护】\n已连续完成 3 次相同工具与参数的调用，且返回结果完全相同。已暂停后续调用，请报告现状并等待用户。用户可在扩展中关闭熔断保护。', toolCall.tool);
         return;
       }
-    } else {
-      duplicateToolCallCount = 0;
-    }
-    lastExecutedToolSig = currentCallSig;
-
-    // 2. 连续最大步数熔断保护 (防止模型没完没了做下去)
-    const maxSteps = parseInt(CONFIG.maxConsecutiveSteps, 10) || 4;
-    if (consecutiveAutoDispatches >= maxSteps) {
-      showToast(`🛑 达到连续自动调用上限 (${maxSteps}轮)，已自动熔断暂停以防死循环！`);
-      isAutoDispatchSuspended = true;
-      const fuseNotice = "【WebAgent 自动执行熔断保护】\n- 已连续自动执行 " + maxSteps + " 轮工具调用。为了防止任务无休止继续与 Token 耗尽，系统已启动安全熔断。\n- 请直接向用户总结汇报当前已经完成的工作进展、已获取的数据以及最终结论。";
-      safeDispatchFeedbackToChat(fuseNotice, toolCall.tool);
-      return;
+      const maxSteps = Math.max(20, parseInt(CONFIG.maxConsecutiveSteps, 10) || 20);
+      if (consecutiveAutoDispatches >= maxSteps) {
+        isAutoDispatchSuspended = true;
+        showToast('🛑 已完成连续工具调用 ' + maxSteps + ' 轮，熔断保护已暂停');
+        safeDispatchFeedbackToChat('【WebAgent 熔断保护】\n已完成连续工具调用 ' + maxSteps + ' 轮，后续调用已暂停。请总结实际进度并等待用户；用户可发送新任务或关闭熔断保护。', toolCall.tool);
+        return;
+      }
     }
 
-    showToast(`⚡ 正在调用 MCP 工具: ${toolCall.tool}...`);
+    showToast('⚡ 正在调用 MCP 工具: ' + toolCall.tool + '...');
+    // Count actual dispatches once, including failures; never count denied calls.
+    const safetyGeneration = reActSafetyGeneration;
+    consecutiveAutoDispatches++;
 
     executeNexusTool(toolCall.tool, toolCall.args, (res) => {
       let feedbackText = "";
       let dataStr = "";
       if (res.ok) {
-        consecutiveErrors = 0;
-        consecutiveAutoDispatches++;
+        if (safetyGeneration === reActSafetyGeneration) {
+          consecutiveErrors = 0;
+          const resultSig = JSON.stringify(res.result ?? null);
+          duplicateToolCallCount = currentCallSig === lastExecutedToolSig && resultSig === lastExecutedResultSig ? duplicateToolCallCount + 1 : 0;
+          lastExecutedToolSig = currentCallSig;
+          lastExecutedResultSig = resultSig;
+        }
         let sanitizedResult = res.result;
         let isImage = false;
 
@@ -4153,17 +4161,23 @@
         if (dataStr.length > 3500) {
           dataStr = dataStr.slice(0, 2200) + "\n\n... [⚠️ 执行返回结果过长 (共 " + dataStr.length + " 字符)，已智能截取首尾关键数据以节省 Token] ...\n\n" + dataStr.slice(-1000);
         }
-        feedbackText = "【WebAgent 1.3.11 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
+        feedbackText = "【WebAgent 1.3.12 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
       } else {
-        consecutiveErrors++;
-        // 若同一任务连续失败 5 次，停止自动回填，防止模型在报错中无限死循环
-        if (consecutiveErrors >= 5) {
-          showToast(`❌ 工具 [${toolCall.tool}] 连续失败: ${res.error}，已停止自动回传以防死循环`);
-          consecutiveErrors = 0;
-          return;
+        if (safetyGeneration === reActSafetyGeneration) {
+          consecutiveErrors++;
+          duplicateToolCallCount = 0;
+          lastExecutedToolSig = "";
+          lastExecutedResultSig = "";
+          if (CONFIG.circuitBreaker !== false && consecutiveErrors >= 5) {
+            isAutoDispatchSuspended = true;
+            showToast('❌ 连续 5 次工具调用失败，熔断保护已暂停；本次错误仍会回填');
+          }
         }
-        consecutiveAutoDispatches++;
-        feedbackText = `【WebAgent 1.3.11 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请如实报告失败，严格遵守用户本次授权范围。若用户限定只调用一次，或下一步需要新增操作/权限，必须停止并等待用户；不得擅自扩大范围或重复副作用调用。）`;
+        feedbackText = `【WebAgent 1.3.12 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请如实报告失败，严格遵守用户本次授权范围。若用户限定只调用一次，或下一步需要新增操作/权限，必须停止并等待用户；不得擅自扩大范围或重复副作用调用。）`;
+      }
+
+      if (!res.ok && CONFIG.circuitBreaker !== false && isAutoDispatchSuspended && safetyGeneration === reActSafetyGeneration) {
+        feedbackText += '\n【熔断保护】连续 5 次调用失败，已暂停后续调度。请报告真实错误并等待用户，不自动重试。';
       }
 
       // 实时记录到跨会话断点任务历史中
@@ -4209,7 +4223,7 @@
   // Read-only popup diagnostics: version and user switches only, no credentials.
   if(extensionContextAtLoad)chrome.runtime.onMessage.addListener((request,sender,sendResponse)=>{
     if(sender.id!==chrome.runtime.id || request?.action!=='webagent_page_status')return false;
-    sendResponse({version:'1.3.11',connected:isConnected,autoExecute:Boolean(CONFIG.autoExecute),autoSend:Boolean(CONFIG.autoSend),toolParse:lastToolParseStatus,autoSendStatus:lastAutoSendStatus});
+    sendResponse({version:'1.3.12',connected:isConnected,autoExecute:Boolean(CONFIG.autoExecute),autoSend:Boolean(CONFIG.autoSend),circuitBreaker:CONFIG.circuitBreaker !== false,maxConsecutiveSteps:CONFIG.maxConsecutiveSteps,toolCallRounds:consecutiveAutoDispatches,suspended:isAutoDispatchSuspended,toolParse:lastToolParseStatus,autoSendStatus:lastAutoSendStatus});
     return false;
   });
 

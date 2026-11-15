@@ -11,7 +11,7 @@
       <div class="logo-icon">🚀</div>
       <div class="logo-info">
         <h3>WebAgent</h3>
-        <span class="version">v1.3.11 (Nexus 本地适配)</span>
+        <span class="version">v1.3.12 (Nexus 本地适配)</span>
       </div>
     </div>
     <div class="status-badge" id="bridgeStatusBadge">检测中...</div>
@@ -49,6 +49,14 @@
         <input type="checkbox" id="autoSendToggle">
         <span class="slider"></span>
       </label>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-label">
+        <strong>熔断保护</strong>
+        <p>开启：20 轮上限、重复结果及连续失败保护；关闭：不按这些条件暂停</p>
+      </div>
+      <label class="switch"><input type="checkbox" id="circuitBreakerToggle" checked><span class="slider"></span></label>
     </div>
 
     <div class="setting-item">

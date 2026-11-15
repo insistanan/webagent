@@ -3,11 +3,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const $ = id => document.getElementById(id);
   const defaults = {webagent_auto_execute: false, webagent_auto_send: false, webagent_review_safe_mode: true,
+    webagent_circuit_breaker: true, webagent_max_consecutive_steps: 20,
     webagent_workspace_dir: '', webagent_project_id: '',
     webagent_bridge_url: 'http://127.0.0.1:8787', webagent_lb_token: '', webagent_management_token: ''};
   const items = await chrome.storage.local.get(defaults);
   $('autoExecuteToggle').checked = items.webagent_auto_execute;
   $('autoSendToggle').checked = items.webagent_auto_send;
+  $('circuitBreakerToggle').checked = items.webagent_circuit_breaker !== false;
   $('safeModeToggle').checked = items.webagent_review_safe_mode;
   $('workspacePathInput').value = items.webagent_workspace_dir;
   $('projectIdInput').value = items.webagent_project_id;
@@ -29,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const installed=chrome.runtime.getManifest().version;
       if(!page || page.version!==installed){notice.textContent='扩展 '+installed+'；当前网页仍为旧脚本，请保存草稿后刷新。';return;}
       notice.textContent='网页 '+page.version+' · '+(page.connected?'MCP 在线':'MCP 未连接')+' · 自动发送'+(page.autoSend?'开启':'关闭');
+      notice.textContent+=' · 熔断'+(page.circuitBreaker===false?'关闭（不限制轮次）':'开启（'+(page.maxConsecutiveSteps||20)+' 轮）')+(page.suspended?' · 已暂停':'');
       if(page.toolParse?.status==='incomplete')notice.textContent+=' · 最近 MCP JSON 被截断，未执行';
       if(page.toolParse?.status==='invalid')notice.textContent+=' · 最近 MCP JSON 格式错误，未执行';
       if(page.autoSendStatus)notice.textContent+=' · '+WebAgentAutoSend.describe(page.autoSendStatus);
@@ -55,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const base = $('bridgeUrlInput').value.trim().replace(/\/+$/, '').replace(/\/mcp$/, '');
     if (!WebAgentMcp.localUrl(base + '/mcp')) throw new Error('只允许本地 8787 / 18080 / 21888 的 HTTP MCP 地址');
     return {webagent_auto_execute: $('autoExecuteToggle').checked, webagent_auto_send: $('autoSendToggle').checked,
+      webagent_circuit_breaker: $('circuitBreakerToggle').checked, webagent_max_consecutive_steps: 20,
       webagent_auto_retry_rate_limit: false, webagent_review_safe_mode: $('safeModeToggle').checked,
       webagent_workspace_dir: $('workspacePathInput').value.trim(),
       webagent_project_id: $('projectIdInput').value.trim(),
@@ -92,6 +96,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('saveConfigBtn').addEventListener('click', async () => {
     try {
       const config = settings();
+      if (!config.webagent_circuit_breaker && items.webagent_circuit_breaker !== false &&
+        !confirm('关闭熔断保护后，不再按 20 轮、重复结果或连续失败暂停，可能持续调用并产生费用或副作用。自动执行、自动发送和项目权限不变。确认关闭？')) { $('circuitBreakerToggle').checked=true; return; }
       if (config.webagent_auto_execute && !items.webagent_auto_execute &&
         !confirm('开启后，网页 AI 的工具提议将不经逐次确认直接执行，可能读写文件或运行命令。是否开启？工具结果是否自动发送由独立的“自动发送”开关决定。')) return;
       if (config.webagent_auto_send && !items.webagent_auto_send &&
@@ -146,6 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         "完整性规范：不得用省略号、占位符或“其余不变”代替文件内容；若单次回复无法容纳完整调用，应先说明并规划按工具支持的分段写入方式进行，每次调用都必须独立完整，禁止输出半截 JSON。",
         "执行规范：输出调用后等待扩展返回真实结果；不要声称尚未执行的操作已经成功。任务完成后不再输出工具调用，直接自然语言总结。",
         '用户设置：自动执行='+config.webagent_auto_execute+'；自动发送工具结果='+config.webagent_auto_send+'。不要自行改变这些设置。',
+        '熔断保护='+config.webagent_circuit_breaker+'；开启时连续工具调用上限 20 轮，关闭时不按轮次/重复结果/连续失败暂停。不要自行修改开关。',
         '项目 ID：' + config.webagent_project_id, '工作目录：' + config.webagent_workspace_dir,
         WebAgentProjectStatus.prompt(projectInfo),
         '文件路径使用项目内相对路径。未经授权不要读取凭证、写文件、删文件或运行命令。',
