@@ -13,6 +13,8 @@ test('manifest includes Zhipu and Google AI Studio matches', () => {
   assert.ok(manifest.host_permissions.includes('https://*.bigmodel.cn/*'));
   assert.ok(manifest.host_permissions.includes('https://chatglm.cn/*'));
   assert.ok(manifest.host_permissions.includes('https://*.chatglm.cn/*'));
+  assert.ok(manifest.host_permissions.includes('https://z.ai/*'));
+  assert.ok(manifest.host_permissions.includes('https://*.z.ai/*'));
   assert.ok(manifest.host_permissions.includes('https://aistudio.google.com/*'));
 
   const matches = manifest.content_scripts[0].matches;
@@ -20,6 +22,8 @@ test('manifest includes Zhipu and Google AI Studio matches', () => {
   assert.ok(matches.includes('https://*.bigmodel.cn/*'));
   assert.ok(matches.includes('https://chatglm.cn/*'));
   assert.ok(matches.includes('https://*.chatglm.cn/*'));
+  assert.ok(matches.includes('https://z.ai/*'));
+  assert.ok(matches.includes('https://*.z.ai/*'));
   assert.ok(matches.includes('https://aistudio.google.com/*'));
 });
 
@@ -35,6 +39,8 @@ test('detectPlatform identifies Zhipu and Google AI Studio', () => {
     { host: 'static.bigmodel.cn', href: 'https://static.bigmodel.cn/', expected: 'zhipu' },
     { host: 'chatglm.cn', href: 'https://chatglm.cn/', expected: 'zhipu' },
     { host: 'www.chatglm.cn', href: 'https://www.chatglm.cn/main', expected: 'zhipu' },
+    { host: 'z.ai', href: 'https://z.ai/chat', expected: 'zhipu' },
+    { host: 'chat.z.ai', href: 'https://chat.z.ai/', expected: 'zhipu' },
     { host: 'aistudio.google.com', href: 'https://aistudio.google.com/prompts/new_chat', expected: 'aistudio' },
   ];
 

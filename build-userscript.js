@@ -46,6 +46,8 @@ const header = `// ==UserScript==
 // @match        https://*.bigmodel.cn/*
 // @match        https://chatglm.cn/*
 // @match        https://*.chatglm.cn/*
+// @match        https://z.ai/*
+// @match        https://*.z.ai/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_xmlhttpRequest

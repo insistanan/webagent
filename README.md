@@ -1,12 +1,12 @@
 # WebAgent (Web AI MCP Bridge)
 
-WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel/清言、Google AI Studio、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
+WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel/清言/Z.ai、Google AI Studio、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
 
 本项目由 [LINUX DO](https://linux.do) 社区认可。
 
 ## 🆕 1.3.2 更新说明
 
-- 新增 **智谱开放平台体验中心（`bigmodel.cn` GLM-5.3）与智谱清言（`chatglm.cn`）** 网页端深度适配及专属主题。
+- 新增 **智谱开放平台体验中心（`bigmodel.cn` GLM-5.3）、智谱清言（`chatglm.cn`）与 Z.ai（`z.ai/chat`）** 网页端深度适配及专属主题。
 - 新增 **Google AI Studio（`aistudio.google.com`）** 原生适配，覆盖 Chat Prompt 与 Freeform 运行、中断与代码块解析。
 - 版本规范化进入 **1.3.2**，全套测试扩充至 **140 项** 并保持 100% 通过。
 
@@ -46,7 +46,7 @@ WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel
 
 ## 🌟 核心特性
 
-- **多模型原生适配**：DeepSeek、Gemini、智谱 (BigModel / 清言)、Google AI Studio、ChatGPT、Kimi、通义千问 (Qwen)、豆包 (Doubao)、Duck.ai、Dola 等。
+- **多模型原生适配**：DeepSeek、Gemini、智谱 (BigModel / 清言 / Z.ai)、Google AI Studio、ChatGPT、Kimi、通义千问 (Qwen)、豆包 (Doubao)、Duck.ai、Dola 等。
 - **本地 MCP 桥接**：支持标准 MCP 工具调用（文件读写、命令行运行、网页快照等）。
 - **极简交互设计**：自适应明暗主题、可自由拖拽位置与收起抽屉。
 - **用户可控自动化**：自动执行工具与自动发送结果是独立开关，记住用户选择；结果直接追加到发送栏，不覆盖已有草稿。

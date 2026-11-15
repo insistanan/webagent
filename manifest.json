@@ -39,6 +39,8 @@
     "https://*.bigmodel.cn/*",
     "https://chatglm.cn/*",
     "https://*.chatglm.cn/*",
+    "https://z.ai/*",
+    "https://*.z.ai/*",
     "https://aistudio.google.com/*",
     "http://127.0.0.1:*/*",
     "http://localhost:*/*",
@@ -96,6 +98,8 @@
         "https://*.bigmodel.cn/*",
         "https://chatglm.cn/*",
         "https://*.chatglm.cn/*",
+        "https://z.ai/*",
+        "https://*.z.ai/*",
         "https://aistudio.google.com/*",
         "https://gemini.google.com/*"
       ],

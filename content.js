@@ -38,6 +38,8 @@
 // @match        https://*.bigmodel.cn/*
 // @match        https://chatglm.cn/*
 // @match        https://*.chatglm.cn/*
+// @match        https://z.ai/*
+// @match        https://*.z.ai/*
 // @match        https://aistudio.google.com/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -253,7 +255,7 @@
     if (host.includes("duck.ai") || host.includes("duckduckgo") || href.includes("duck.ai") || href.includes("duckduckgo.com")) return "duckai";
     if (host.includes("qwen") || host.includes("tongyi") || href.includes("qwen.ai") || href.includes("tongyi.aliyun.com")) return "qwen";
     if (host.includes("dola") || href.includes("dola.com")) return "dola";
-    if (host.includes("bigmodel.cn") || host.includes("chatglm") || href.includes("bigmodel.cn") || href.includes("chatglm.cn")) return "zhipu";
+    if (host.includes("bigmodel.cn") || host.includes("chatglm") || host === "z.ai" || host.endsWith(".z.ai") || href.includes("bigmodel.cn") || href.includes("chatglm.cn") || href.includes("z.ai")) return "zhipu";
     return "unknown";
   }
 
@@ -353,8 +355,8 @@
       defaultPosition: { bottom: "28px", right: "28px" },
     },
     zhipu: {
-      name: "智谱",
-      badgeTitle: "智谱 × WebAgent 1.3.2",
+      name: "智谱 (Z.ai)",
+      badgeTitle: "智谱/Z.ai × WebAgent 1.3.2",
       icon: "⚡",
       primaryColor: "#3478F6",
       primaryHover: "#2563EB",
@@ -1253,6 +1255,9 @@
           document.querySelector("textarea[placeholder*='和我聊聊天']") ||
           document.querySelector("textarea[placeholder*='请输入']") ||
           document.querySelector("textarea[placeholder*='输入']") ||
+          document.querySelector("textarea[placeholder*='Ask' i]") ||
+          document.querySelector("textarea[placeholder*='Message' i]") ||
+          document.querySelector("textarea[placeholder*='Chat' i]") ||
           document.querySelector("div.input-box textarea") ||
           document.querySelector("div.input-wrapper textarea") ||
           document.querySelector("div[contenteditable='true']") ||
@@ -1292,7 +1297,9 @@
           document.querySelector("div[class*='send']:not([disabled])") ||
           document.querySelector("button[class*='send']:not([disabled])") ||
           document.querySelector("button[aria-label*='发送']") ||
+          document.querySelector("button[aria-label*='Send' i]") ||
           document.querySelector("div[role='button'][aria-label*='发送']") ||
+          document.querySelector("div[role='button'][aria-label*='Send' i]") ||
           document.querySelector("div.input-box .cursor-pointer") ||
           document.querySelector("div.input-wrapper .cursor-pointer") ||
           document.querySelector("button:has(svg)") ||
@@ -1304,6 +1311,8 @@
           document.querySelector(".icon-stop") ||
           document.querySelector(".icon-pause") ||
           document.querySelector("button[aria-label*='停止']") ||
+          document.querySelector("button[aria-label*='Stop' i]") ||
+          document.querySelector("div[role='button'][aria-label*='Stop' i]") ||
           document.querySelector("button:has(i[class*='stop'])") ||
           document.querySelector("button:has(i[class*='pause'])") ||
           document.querySelector("div[class*='stop']") ||

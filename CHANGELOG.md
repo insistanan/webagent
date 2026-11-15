@@ -2,7 +2,7 @@
 
 ## 1.3.2 — 2026-11-15
 
-- 新增 **智谱平台（BigModel 开放平台体验中心与智谱清言）** 网页端原生适配与专属主题（支持 GLM-5.3 体验中心及 chatglm.cn）。
+- 新增 **智谱平台（BigModel 开放平台体验中心、智谱清言与 Z.ai 海外站 `z.ai/chat`）** 网页端原生适配与专属主题（支持 GLM-5.3 体验中心、chatglm.cn 及 z.ai）。
 - 新增 **Google AI Studio（aistudio.google.com）** 原生适配：支持 Chat Prompt / Freeform 提示词输入、Run 执行按钮与流式生成中断检测。
 - 版本规范化进入 1.3.2，新增针对智谱与 AI Studio 的全套自动化测试，总计 140 项测试并全部通过。
 
