@@ -146,7 +146,7 @@ input:checked + .slider:before {
   color: #94a3b8;
   margin-bottom: 4px;
 }
-.input-group input, .input-group select {
+.input-group input {
   width: 100%;
   padding: 6px 8px;
   background: #0f172a;
@@ -181,7 +181,3 @@ input:checked + .slider:before {
   font-size: 10px;
   color: #64748b;
 }
-
-.card > p { font-size:11px; line-height:1.5; color:#94a3b8; margin:6px 0; }
-.card > .btn { margin:4px 0 10px; }
-button:disabled { opacity:.5; cursor:wait; }
