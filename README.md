@@ -1,8 +1,16 @@
 # WebAgent (Web AI MCP Bridge)
 
+**当前版本：1.3.3**
+
 WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel/清言/Z.ai、Google AI Studio、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
 
 本项目由 [LINUX DO](https://linux.do) 社区认可。
+
+## 🆕 1.3.3 更新说明（当前版本）
+
+- 版本号升级为 **1.3.3**。
+- 已加入 **Google AI Studio**（`aistudio.google.com`，含 `prompts/new_chat` 新对话页）网页端适配：专属主题、输入框、Run/Stop 按钮识别与模型回复代码块解析。
+- 已加入 **Z.ai**（`zchat.z.ai`、`chat.z.ai`）网页端适配：专属主题、输入框、发送/停止按钮识别与回复解析。
 
 ## 🆕 1.3.2 更新说明
 
