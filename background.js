@@ -1,11 +1,11 @@
 // WebAgent 1.3.3 Extension - Background Service Worker
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('[WebAgent 1.3.3 Extension] Service Worker 启动并就绪');
+  console.log('[WebAgent 1.3.3 Extension] Service Worker ready');
   chrome.action.setBadgeText({ text: 'ON' });
   chrome.action.setBadgeBackgroundColor({ color: '#10b981' });
 });
 
-// 后台代理网络请求，彻底绕过网页端 CSP 与跨域限制
+// Background fetch for local bridge requests
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'fetch_bridge') {
     const fetchOptions = {
@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           error: err.name === 'AbortError' ? 'Request timed out' : err.message
         });
       });
-    return true; // 保持通道进行异步回调
+    return true; // Keep the message channel open for asynchronous response
   } else if (request.action === 'update_badge') {
     if (request.text !== undefined) {
       chrome.action.setBadgeText({ text: request.text });

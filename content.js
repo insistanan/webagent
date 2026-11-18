@@ -274,8 +274,8 @@
       defaultPosition: { bottom: "24px", right: "28px" },
     },
     doubao: {
-      name: "豆包",
-      badgeTitle: "豆包 × WebAgent 1.3.3",
+      name: "Doubao",
+      badgeTitle: "Doubao × WebAgent 1.3.3",
       icon: "👧🏻",
       primaryColor: "#3370FF",
       primaryHover: "#1E5AF5",
@@ -298,7 +298,7 @@
       defaultPosition: { top: "12px", left: "calc(50% - 90px)" },
     },
     qwen: {
-      name: "通义千问",
+      name: "Qwen",
       badgeTitle: "Qwen × WebAgent 1.3.3",
       icon: "🟣",
       primaryColor: "#615CED",
@@ -483,21 +483,21 @@
     const isDark = isCurrentThemeDark();
     if (statusTag) {
       if (mode === "auto") {
-        statusTag.innerText = `跟随页面 (${isDark ? "暗色" : "浅色"})`;
+        statusTag.innerText = `Follow page (${isDark ? "dark" : "light"})`;
       } else if (mode === "dark") {
-        statusTag.innerText = "强制暗黑";
+        statusTag.innerText = "Force dark";
       } else {
-        statusTag.innerText = "强制明亮";
+        statusTag.innerText = "Force light";
       }
     }
     if (quickBtn) {
       setSafeHTML(quickBtn, nxSvg("theme", "nexus-icon-btn"));
       if (mode === "auto") {
-        quickBtn.title = `主题: 自动跟随 (当前${isDark ? "暗色" : "浅色"}) - 点击切换`;
+        quickBtn.title = `Theme: Follow page (currently ${isDark ? "dark" : "light"}) - click to change`;
       } else if (mode === "light") {
-        quickBtn.title = "主题: 强制明亮 - 点击切换";
+        quickBtn.title = "Theme: Force light - click to change";
       } else {
-        quickBtn.title = "主题: 强制暗黑 - 点击切换";
+        quickBtn.title = "Theme: Force dark - click to change";
       }
     }
   }
@@ -507,9 +507,9 @@
     CONFIG.themeMode = newMode;
     GM_setValue("nexus_theme_mode", newMode);
     applyThemeVariables();
-    const names = { auto: "跟随页面", light: "明亮模式", dark: "暗黑模式" };
+    const names = { auto: "Follow page", light: "Light mode", dark: "Dark mode" };
     if (typeof showToast === "function") {
-      showToast(`UI 主题已设为: ${names[newMode] || newMode}`);
+      showToast(`UI theme set to: ${names[newMode] || newMode}`);
     }
   }
 
@@ -2393,7 +2393,7 @@
             isConnected = true;
             CONFIG.nexusUrl = targetUrl;
             connectionPingMs = Date.now() - startTime;
-            updateStatusUI("online", `${CURRENT_THEME.badgeTitle} (在线)`);
+            updateStatusUI("online", `${CURRENT_THEME.badgeTitle} (Online)`);
             updatePanelPingUI(true, connectionPingMs);
             fetchMcpTools();
             if (callback) callback(true);
@@ -2407,7 +2407,7 @@
               return;
             }
             isConnected = false;
-            updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (未就绪)`);
+            updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (Not ready)`);
             updatePanelPingUI(false);
             if (callback) callback(false);
           }
@@ -2422,7 +2422,7 @@
             return;
           }
           isConnected = false;
-          updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (未连接)`);
+          updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (Disconnected)`);
           updatePanelPingUI(false);
           if (callback) callback(false);
         },
@@ -2436,7 +2436,7 @@
             return;
           }
           isConnected = false;
-          updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (超时)`);
+          updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (Timed out)`);
           updatePanelPingUI(false);
           if (callback) callback(false);
         },
@@ -2446,7 +2446,7 @@
   }
 
   function executeNexusTool(toolName, args, callback) {
-    updateStatusUI("busy", `⚡ 执行: ${toolName}...`);
+    updateStatusUI("busy", `⚡ Running: ${toolName}...`);
     isExecuting = true;
 
     const token = CONFIG.token || DEFAULT_BRIDGE_TOKEN;
@@ -2562,13 +2562,13 @@
           }
           const p = ${JSON.stringify(targetPath)};
           if (!fs.existsSync(p)) {
-            console.error('ERROR: 文件不存在 -> ' + p);
+            console.error('ERROR: File not found -> ' + p);
             process.exit(1);
           }
           const content = smartDecode(fs.readFileSync(p));
           let finalContent = content;
           if (finalContent.length > 4000) {
-            finalContent = finalContent.slice(0, 2500) + "\\n\\n... [⚠️ 文件内容较长 (共 " + finalContent.length + " 字符)，已自动智能精简中间部分，建议按行或按模块读取] ...\\n\\n" + finalContent.slice(-1000);
+            finalContent = finalContent.slice(0, 2500) + "\\n\\n... [⚠️ File content was truncated (total " + finalContent.length + " characters); read by line range or module] ...\\n\\n" + finalContent.slice(-1000);
           }
           console.log(finalContent);
         `,
@@ -2585,7 +2585,7 @@
           const dir = path.dirname(p);
           if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
           fs.writeFileSync(p, ${JSON.stringify(content)}, 'utf8');
-          console.log('SUCCESS: 文件写入成功 -> ' + p + ' (' + Buffer.byteLength(${JSON.stringify(content)}) + ' 字节)');
+          console.log('SUCCESS: File saved -> ' + p + ' (' + Buffer.byteLength(${JSON.stringify(content)}) + ' bytes)');
         `,
       };
     } else if (cleanTool === "file_list" || cleanTool === "list" || cleanTool === "ls" || cleanTool === "dir") {
@@ -2597,7 +2597,7 @@
           const path = require('path');
           const p = ${JSON.stringify(targetPath)};
           if (!fs.existsSync(p)) {
-            console.error('ERROR: 目录不存在 -> ' + p);
+            console.error('ERROR: Directory not found -> ' + p);
             process.exit(1);
           }
           const entries = fs.readdirSync(p, { withFileTypes: true });
@@ -2637,7 +2637,7 @@
             let out;
             if (isStart) {
               spawn(rawCmd, { shell: true, detached: true, stdio: 'ignore' }).unref();
-              console.log("SUCCESS: 进程已在桌面成功启动 -> " + rawCmd);
+              console.log("SUCCESS: Process started -> " + rawCmd);
               process.exit(0);
             } else if (isPowerShell) {
               out = execSync(rawCmd, { shell: 'powershell.exe', encoding: 'buffer', timeout: 30000, maxBuffer: 10 * 1024 * 1024 });
@@ -2646,12 +2646,12 @@
             }
             let outStr = smartDecode(out);
             if (outStr.length > 3500) {
-              outStr = outStr.slice(0, 2200) + "\\n\\n... [⚠️ 控制台输出日志较长 (共 " + outStr.length + " 字符)，已截断中间日志以防超出上下文] ...\\n\\n" + outStr.slice(-1000);
+              outStr = outStr.slice(0, 2200) + "\\n\\n... [⚠️ Console output was shortened (total " + outStr.length + " characters) to limit context use] ...\\n\\n" + outStr.slice(-1000);
             }
             if (isPowerShell && /^\s*Start-Process/i.test(rawCmd)) {
-              if (!outStr) outStr = "SUCCESS: 进程已在桌面成功启动 -> " + rawCmd;
+              if (!outStr) outStr = "SUCCESS: Process started -> " + rawCmd;
             }
-            console.log(outStr || "SUCCESS: 命令执行完毕（无标准输出）");
+            console.log(outStr || "SUCCESS: Command completed (no standard output)");
           } catch (e) {
             const errBuf = (e.stderr && e.stderr.length) ? e.stderr : (e.stdout && e.stdout.length ? e.stdout : null);
             const errMsg = errBuf ? smartDecode(errBuf) : (e.message || String(e));
@@ -2673,7 +2673,7 @@
           script: `
             const cp = require('child_process');
             try {
-              let focus = '未知前台应用';
+              let focus = 'Unknown foreground application';
               try {
                 const focusRaw = cp.execSync('adb shell "dumpsys window | grep -E mCurrentFocus"', { timeout: 3000, encoding: 'utf8' });
                 const m = focusRaw.match(/mCurrentFocus=Window\\{[^ ]+ u0 ([^\\}]+)\\}/);
@@ -2693,7 +2693,7 @@
                   const cx = Math.round((parseInt(x1) + parseInt(x2)) / 2);
                   const cy = Math.round((parseInt(y1) + parseInt(y2)) / 2);
                   elements.push({
-                    text: displayText || (resId ? resId.split('/').pop() : '未命名元素'),
+                    text: displayText || (resId ? resId.split('/').pop() : 'Unnamed element'),
                     type: cls.split('.').pop(),
                     clickable: clickable === 'true',
                     bounds: \`[\${x1},\${y1}][\${x2},\${y2}]\`,
@@ -2731,7 +2731,7 @@
                 success: true,
                 file_path: tmpPath,
                 image_size_kb: Math.round(buf.length / 1024),
-                base64: 'data:image/png;base64,' + b64.slice(0, 300) + '...[已存入本地文件: ' + tmpPath + ']'
+                base64: 'data:image/png;base64,' + b64.slice(0, 300) + '...[Saved to local file: ' + tmpPath + ']'
               }));
             } catch (e) {
               console.error(JSON.stringify({ success: false, error: e.message }));
@@ -2780,7 +2780,7 @@
           try {
             const rawCmd = ${JSON.stringify(cmd)};
             spawn(rawCmd, { shell: true, detached: true, stdio: 'ignore' }).unref();
-            console.log("SUCCESS: 进程已在桌面成功启动 -> " + rawCmd);
+            console.log("SUCCESS: Process started -> " + rawCmd);
             process.exit(0);
           } catch (e) {
             console.error("ERROR: " + (e.message || String(e)));
@@ -2926,7 +2926,7 @@
         try {
           resp = JSON.parse(res.responseText);
         } catch (e) {
-          callback({ ok: false, error: `JSON 解析异常: ${e.message} 原文: ${res.responseText.slice(0, 300)}` });
+          callback({ ok: false, error: `JSON parse error: ${e.message} Raw response: ${res.responseText.slice(0, 300)}` });
           return;
         }
 
@@ -2954,7 +2954,7 @@
         }
 
         if (isErr) {
-          const errMsg = resp.result?.structuredContent?.stderr || textResult || "MCP 工具返回执行错误";
+          const errMsg = resp.result?.structuredContent?.stderr || textResult || "MCP tool returned an execution error";
           callback({ ok: false, error: errMsg });
         } else {
           callback({ ok: true, result: textResult });
@@ -2962,13 +2962,13 @@
       },
       onerror: (err) => {
         isExecuting = false;
-        updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (出错)`);
-        callback({ ok: false, error: `网络或服务不可达: ${err}` });
+        updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (Error)`);
+        callback({ ok: false, error: `Network or service unavailable: ${err}` });
       },
       ontimeout: () => {
         isExecuting = false;
-        updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (超时)`);
-        callback({ ok: false, error: "调用本地 WebAgent 35秒超时" });
+        updateStatusUI("offline", `${CURRENT_THEME.badgeTitle} (Timed out)`);
+        callback({ ok: false, error: "Local WebAgent call timed out after 35 seconds" });
       },
     });
     }
@@ -2981,106 +2981,25 @@
   // =========================================================================
   function getCustomAgentPrompt() {
     const ws = (CONFIG.workspace || "").replace(/\\/g, "/").trim();
-    const wsDisplay = ws ? `${ws} (支持整机跨盘符绝对路径)` : "未预设（可在 WebAgent 插件设置中心填写，支持全盘绝对路径）";
+    const wsDisplay = ws ? `${ws} (absolute paths supported)` : "Not configured (set an absolute workspace path in WebAgent settings)";
     const memoryDisplay = ws
-      ? `- 核心工程记忆: 架构设计与常用命令已固化在 ${ws}/project-memory.md，可随时使用 file_read 读取。`
-      : "- 核心工程记忆: 支持读取工作目录下的 project-memory.md 获取项目设计与规范。";
+      ? `- Project memory: if present, read ${ws}/project-memory.md for project notes and constraints.`
+       : "- Project memory: check project-memory.md in the workspace if the user requests it.";
     const exampleFilePath = ws ? `${ws}/test.txt` : "test.txt";
     const exampleDirPath = ws || ".";
 
-return `你好！接下来我会在本地开发与系统工程任务中使用 WebAgent 浏览器扩展。它是我自己安装并运行在本机的工具桥：你输出符合下方格式的工具调用代码块后，扩展会解析并在我的电脑上执行，再把结果回传给你。
-【宿主机已就绪运行环境与工具链清单 (免探测直调)】
-- 操作系统: 自动适配宿主机操作系统 (Windows / macOS / Linux)，支持原生控制台命令执行
-- 默认工作目录: ${wsDisplay}
-- Node.js 运行环境: 支持系统环境变量已配置的 node, npm, pnpm 命令行直接调用
-- Python 运行环境: 支持系统环境变量已配置的 python, pip, uv 命令行直接调用
-- 开发者工具链与版本控制: 支持系统已安装的 git 等标准开发者工具直接调用
-- 浏览器操作能力: 系统默认浏览器 (如 Chrome / Edge / 默认浏览器) 联动与网页导航，支持在宿主机默认浏览器中打开指定网址 (browser_open)
-${memoryDisplay}
-- 说明: 运行环境已确认可用，无需再用 where / find / dir 探测环境，直接使用上述路径与运行时即可。
-
-【使用方式与边界】
-1. 这是我本人安装并运行在本机的工具桥，全程在我的屏幕上可见，我可以随时暂停或关闭它；工具调用由扩展在本机执行，并把结果回传给你。
-2. 你仍然按自己的判断行事：对明显有害、破坏性或不可逆的请求（例如大量删除文件、窃取数据、破坏系统），请直接拒绝并说明原因；对正常的开发与日常操作（打开终端、查看目录、读写项目文件、打开网页等），请直接给出对应的工具调用。
-
-【输出格式】
-1. 需要执行操作时，请输出一个 \`\`\`nexus 代码块，内容为一个 JSON 工具调用；代码块前后尽量不要添加多余说明，以便扩展正确解析。
-2. 每次回答只输出一个工具调用，等待扩展回传执行结果后再决定下一步。
-3. 拿到结果后，如果任务已完成，请用自然语言简要汇报；如果还需要下一步，再输出下一个代码块。
-
-【示例】
-用户输入: 打开cmd
-你的回复:
-\`\`\`nexus
-{
-  "tool": "command_run",
-  "command": "Start-Process cmd.exe"
-}
-\`\`\`
-
-用户输入: 查看当前目录
-你的回复:
-\`\`\`nexus
-{
-  "tool": "command_run",
-  "command": "dir"
-}
-\`\`\`
-
-【工具调用规范与高频操作范式】
-底层 WebAgent 插件会自动拦截代码块并在本机真实执行，秒级将结果回传至对话：
-
-1. 启动交互式终端/应用或执行系统命令 (command_run):
-- 启动桌面原生命令行 (cmd) 范式：
-\`\`\`nexus
-{
-  "tool": "command_run",
-  "command": "Start-Process cmd.exe"
-}
-\`\`\`
-- 执行后台命令/查询文件范式：
-\`\`\`nexus
-{
-  "tool": "command_run",
-  "command": "dir"
-}
-\`\`\`
-
-2. 读取本地文件 (file_read):
-\`\`\`nexus
-{
-  "tool": "file_read",
-  "path": "${exampleFilePath}"
-}
-\`\`\`
-
-3. 写入或新建文件 (file_write):
-\`\`\`nexus
-{
-  "tool": "file_write",
-  "path": "${exampleFilePath}",
-  "content": "写入内容"
-}
-\`\`\`
-
-4. 列出目录文件清单 (file_list):
-\`\`\`nexus
-{
-  "tool": "file_list",
-  "path": "${exampleDirPath}"
-}
-\`\`\`
-
-5. 在系统默认浏览器中打开/导航网页 (browser_open):
-\`\`\`nexus
-{
-  "tool": "browser_open",
-  "url": "https://www.google.com"
-}
-\`\`\`
-
-【初始化】
-收到本说明后，请只简短回复“人机模式已启动”表示已理解，然后等待我发送具体任务。`;
+return [
+    "I'm using WebAgent to connect this web AI chat to local tools exposed by my Nexus instance.",
+    "Configured workspace: " + wsDisplay,
+    memoryDisplay,
+    "Use only discovered tools with valid JSON arguments and obey the actual Nexus project permissions.",
+    "For a requested tool operation, emit one complete fenced nexus code block containing one JSON tool call. Wait for the real execution result before planning the next step.",
+    "For actions with external effects or privacy risk, follow the user's instructions and relevant safety requirements. Do not claim an operation succeeded without a tool result.",
+    "Example JSON shape (tool name and arguments must match discovered schema):",
+    '{"tool":"file_list","path":' + JSON.stringify(exampleDirPath) + '}',
+    "If the request is already complete, briefly summarize the verified result. Otherwise propose the next single tool call.",
+    "For setup acknowledgment, say: WebAgent ready. Do not execute a tool until the user asks for an action."
+  ].join("\\n");
   }
 
   // =========================================================================
@@ -3101,9 +3020,9 @@ ${memoryDisplay}
   function updatePanelPingUI(ok, pingMs) {
     if (panelStatusEl) {
       if (ok) {
-        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator online"></span><span>Nexus MCP 服务就绪</span></span><span class="nexus-status-ping">${pingMs || 70}ms</span>`);
+        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator online"></span><span>Nexus MCP service ready</span></span><span class="nexus-status-ping">${pingMs || 70}ms</span>`);
       } else {
-        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) 未连接</span></span><span style="font-size:10px; color:var(--nx-text-muted);">请启动 WebAgent 1.3.3</span>`);
+        setSafeHTML(panelStatusEl, `<span class="nexus-status-left"><span class="nexus-status-indicator offline"></span><span style="color:#EF4444">WebAgent (18080/8787) disconnected</span></span><span style="font-size:10px; color:var(--nx-text-muted);">Start the local Nexus service</span>`);
       }
     }
   }
@@ -3113,7 +3032,7 @@ ${memoryDisplay}
     if (!toolsListContainerEl) return;
 
     if (!tools || tools.length === 0) {
-      setSafeHTML(toolsListContainerEl, `<div style="padding:6px; color:#94A3B8;">暂未发现顶层 MCP 工具，底层 332 个原子能力已随时待命</div>`);
+      setSafeHTML(toolsListContainerEl, `<div style="padding:6px; color:#94A3B8;">No MCP tools discovered yet; check the local connection</div>`);
       return;
     }
 
@@ -3136,7 +3055,7 @@ ${memoryDisplay}
         if (inputEl) {
           const sample = `\`\`\`nexus\n{\n  "tool": "${toolName}"\n}\n\`\`\``;
           currentAdapter.setValue(inputEl, sample);
-          showToast(`已填入工具 [${toolName}] 调用模版！`);
+          showToast(`Inserted call template for [${toolName}]`);
         }
       });
     });
@@ -3308,7 +3227,7 @@ ${memoryDisplay}
     // 悬浮药丸 (Draggable Pill)
     const pill = document.createElement("div");
     pill.className = "nexus-pill";
-    pill.title = "长按拖动位置；点击展开 MCP 控制面板";
+    pill.title = "Drag to reposition; click to open the MCP panel";
 
     pillDotEl = document.createElement("span");
     pillDotEl.className = "nexus-dot";
@@ -3339,8 +3258,8 @@ ${memoryDisplay}
           <span>${CURRENT_THEME.name} × WebAgent 1.3.3</span>
         </div>
         <div class="nexus-head-actions">
-          <button class="nexus-theme-btn-quick" id="nexus-open-settings" title="打开设置中心">${nxSvg("gear", "nexus-icon-btn")}</button>
-          <button class="nexus-theme-btn-quick" id="nexus-quick-theme" title="切换 UI 主题模式 (自动/明亮/暗黑)">${nxSvg("theme", "nexus-icon-btn")}</button>
+          <button class="nexus-theme-btn-quick" id="nexus-open-settings" title="Open settings">${nxSvg("gear", "nexus-icon-btn")}</button>
+          <button class="nexus-theme-btn-quick" id="nexus-quick-theme" title="Change UI theme (auto/light/dark)">${nxSvg("theme", "nexus-icon-btn")}</button>
           <button class="nexus-close-btn" id="nexus-close-drawer">✕</button>
         </div>
       </div>
@@ -3348,12 +3267,12 @@ ${memoryDisplay}
       <!-- 设置界面专属头部 Header (二级视图) -->
       <div class="nexus-drawer-head nexus-hidden" id="nexus-head-settings" style="display: none !important;">
         <div style="display: inline-flex; align-items: center; gap: 8px;">
-          <button class="nexus-back-btn" id="nexus-back-to-main" title="返回主操作界面">
-            ${nxSvg("back", "nexus-mini-icon", "margin-right: 4px;")} <span>返回</span>
+          <button class="nexus-back-btn" id="nexus-back-to-main" title="Back to main panel">
+            ${nxSvg("back", "nexus-mini-icon", "margin-right: 4px;")} <span>Back</span>
           </button>
           <div class="nexus-drawer-title" style="font-size: 13px;">
             ${nxSvg("gear", "nexus-ui-icon", "color: var(--nx-primary); margin-right: 6px;")}
-            <span>设置中心</span>
+            <span>Settings</span>
           </div>
         </div>
         <div class="nexus-head-actions">
@@ -3366,44 +3285,44 @@ ${memoryDisplay}
                 <!-- 首次使用路径配置引导卡片 (仅初次未设置时显示，保存后自动收起，以后进设置修改) -->
         <div id="nexus-first-setup-card" class="nexus-setup-card" style="display: ${Boolean(CONFIG.workspace && CONFIG.workspace.trim().length > 0) ? 'none' : 'block'}; background: var(--nx-subtle-bg, rgba(255,255,255,0.06)); border: 1px solid var(--nx-divider, rgba(255,255,255,0.12)); border-radius: 10px; padding: 12px; margin-bottom: 8px;">
           <div style="font-size: 12px; font-weight: 700; color: var(--nx-text-primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span>📁 首次使用：请先设置工作路径</span>
-            <span style="font-size: 10px; color: var(--nx-text-muted); font-weight: normal;">仅需首次填写，后续在设置中改</span>
+            <span>📁 First use: choose a workspace</span>
+            <span style="font-size: 10px; color: var(--nx-text-muted); font-weight: normal;">You can change it later in Settings</span>
           </div>
           <div style="font-size: 11px; color: var(--nx-text-muted); margin-bottom: 8px; line-height: 1.4;">
-            设定本地开发工作目录，以便本地客户端精准定位工程文件。
+            Choose the local directory that Nexus is authorized to work with.
           </div>
           <div class="nexus-field" style="margin-bottom: 6px;">
             <label class="nexus-label" style="font-size: 11px; margin-bottom: 3px; display: flex; justify-content: space-between;">
-              <span>项目工作目录 (支持全盘路径):</span>
-              <span style="color: #EF4444; font-weight: 600;">*必填</span>
+              <span>Project workspace (absolute path):</span>
+              <span style="color: #EF4444; font-weight: 600;">*Required</span>
             </label>
-            <input class="nexus-input" type="text" id="nexus-init-workspace" placeholder="例如 E:/workspace" value="${CONFIG.workspace || ''}" style="font-size: 11px; padding: 6px 8px;" />
+            <input class="nexus-input" type="text" id="nexus-init-workspace" placeholder="e.g. E:/workspace" value="${CONFIG.workspace || ''}" style="font-size: 11px; padding: 6px 8px;" />
           </div>
           <button type="button" class="nexus-btn-primary" id="nexus-btn-save-init" style="padding: 8px 12px; font-size: 12px; border-radius: 8px; width: 100%; font-weight: 600;">
-            💾 保存路径并开启使用
+            💾 Save workspace and continue
           </button>
         </div>
 
         <!-- 核心大按钮: 注入开发协作协议 -->
         <button class="nexus-btn-primary" id="nexus-act-prompt" style="padding: 12px 14px; font-size: 13px; font-weight: 700; border-radius: 10px; margin-bottom: 2px;">
           ${nxSvg("zap", "nexus-btn-icon", "margin-right: 6px; vertical-align: -2px;")}
-          <span>注入开发协作协议 (防拒答)</span>
+          <span>Insert collaboration prompt</span>
         </button>
 
         
         <!-- 常用系统与工程指令 (轻量折叠) -->
         <div style="margin-top: 2px;">
           <div class="nexus-adv-header" id="nexus-eng-toggle" style="padding: 6px 8px; border-radius: 8px;">
-            <span style="font-size: 11px; font-weight: 600; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("terminal", "nexus-ui-icon", "width: 13px; height: 13px; margin-right: 5px; color: var(--nx-text-muted);")}常用系统与工程指令 (5个)</span>
+            <span style="font-size: 11px; font-weight: 600; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("terminal", "nexus-ui-icon", "width: 13px; height: 13px; margin-right: 5px; color: var(--nx-text-muted);")}Common tools (5)</span>
             <span class="nexus-adv-arrow" id="nexus-eng-arrow">▸</span>
           </div>
           <div class="nexus-adv-body" id="nexus-eng-body" style="display: none; padding: 6px 2px; gap: 4px;">
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
-              <button class="nexus-btn-sec" data-eng-action="browser" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("window", "nexus-mini-icon", "margin-right: 4px; color: var(--nx-primary);")}网页快照 (snapshot)</button>
-              <button class="nexus-btn-sec" data-eng-action="mem" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("brain", "nexus-mini-icon", "margin-right: 4px;")}项目记忆 (project-memory)</button>
-              <button class="nexus-btn-sec" data-eng-action="ls" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("folder", "nexus-mini-icon", "margin-right: 4px;")}文件结构 (file_list)</button>
-              <button class="nexus-btn-sec" data-eng-action="git" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("find", "nexus-mini-icon", "margin-right: 4px;")}Git工具 (discover_tools)</button>
-              <button class="nexus-btn-sec" data-eng-action="ps" style="grid-column: span 2; padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("cpu", "nexus-mini-icon", "margin-right: 4px;")}系统进程 (process_list)</button>
+              <button class="nexus-btn-sec" data-eng-action="browser" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("window", "nexus-mini-icon", "margin-right: 4px; color: var(--nx-primary);")}Page snapshot (snapshot)</button>
+              <button class="nexus-btn-sec" data-eng-action="mem" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("brain", "nexus-mini-icon", "margin-right: 4px;")}Project memory (project-memory)</button>
+              <button class="nexus-btn-sec" data-eng-action="ls" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("folder", "nexus-mini-icon", "margin-right: 4px;")}Files (file_list)</button>
+              <button class="nexus-btn-sec" data-eng-action="git" style="padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("find", "nexus-mini-icon", "margin-right: 4px;")}Git tools (discover_tools)</button>
+              <button class="nexus-btn-sec" data-eng-action="ps" style="grid-column: span 2; padding: 5px 6px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center;">${nxSvg("cpu", "nexus-mini-icon", "margin-right: 4px;")}Processes (process_list)</button>
             </div>
           </div>
         </div>
@@ -3413,19 +3332,19 @@ ${memoryDisplay}
       <div id="nexus-view-settings" class="nexus-view-container" style="display: none;">
         <!-- 服务状态指示条 -->
         <div class="nexus-status-bar" id="nexus-status-bar">
-          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>正在连接本地 WebAgent 1.3.3 MCP 网关...</span></span>
+          <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>Connecting to local WebAgent 1.3.3 MCP gateway...</span></span>
         </div>
 
         <!-- 默认工作目录 -->
         <div class="nexus-field">
-          <label class="nexus-label" style="display: inline-flex; align-items: center;">${nxSvg("folder", "nexus-ui-icon")}默认工作目录 (支持全盘任意路径)</label>
-          <input class="nexus-input" type="text" id="nexus-cfg-workspace" placeholder="请填写本地工作目录绝对路径 (如 D:/Projects 或 C:/Users/YourName/Workspace)" value="${CONFIG.workspace || ''}" />
+          <label class="nexus-label" style="display: inline-flex; align-items: center;">${nxSvg("folder", "nexus-ui-icon")}Default workspace (absolute path)</label>
+          <input class="nexus-input" type="text" id="nexus-cfg-workspace" placeholder="Enter an absolute path (e.g. D:/Projects)" value="${CONFIG.workspace || ''}" />
         </div>
 
         
         <!-- 安全润色保护模式 Switch -->
         <div class="nexus-switch-row" style="margin-top: 2px;">
-          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("shield", "nexus-ui-icon")}安全润色保护模式 (仅追加批注建议，严禁直接覆盖原文)</span>
+          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("shield", "nexus-ui-icon")}Review-only mode (suggest edits; do not overwrite text)</span>
           <label class="nexus-switch" style="transform: scale(0.85); transform-origin: right center;">
             <input type="checkbox" id="nexus-cfg-review-safe" ${CONFIG.reviewSafeMode ? "checked" : ""}>
             <span class="nexus-slider"></span>
@@ -3434,7 +3353,7 @@ ${memoryDisplay}
 
         <!-- 自动执行 Switch -->
         <div class="nexus-switch-row">
-          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary); display: inline-flex; align-items: center;">${nxSvg("zap", "nexus-ui-icon")}自动拦截 MCP 调用并回填执行结果</span>
+          <span class="nexus-label" style="font-size: 12px; color: var(--nx-text-primary); display: inline-flex; align-items: center;">${nxSvg("zap", "nexus-ui-icon")}Execute recognized MCP calls and return results</span>
           <label class="nexus-switch">
             <input type="checkbox" id="nexus-cfg-auto" ${CONFIG.autoExecute ? "checked" : ""}>
             <span class="nexus-slider"></span>
@@ -3444,30 +3363,30 @@ ${memoryDisplay}
         <!-- 发送延迟安全缓冲与防风控 -->
         <div class="nexus-field" style="margin-top: 2px; padding: 6px 10px; background: rgba(0,0,0,0.18); border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.15);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("clock", "nexus-ui-icon")}回填延迟缓冲</label>
+            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("clock", "nexus-ui-icon")}Feedback delay</label>
             <span id="nexus-delay-val" style="font-size: 12px; font-weight: 700; color: ${CURRENT_THEME.primaryColor};">${Number(CONFIG.sendDelay).toFixed(1)}s</span>
           </div>
           <input type="range" id="nexus-cfg-delay" min="1.0" max="6.0" step="0.5" value="${CONFIG.sendDelay}" style="width: 100%; accent-color: ${CURRENT_THEME.primaryColor}; cursor: pointer;" />
           <div style="font-size: 10px; color: var(--nx-text-muted); line-height: 1.3; margin-top: 2px;">
-            * 增加请求间隔秒数，彻底消除网页模型接口速率限制。
+            * Increase the interval between requests; this may help with rate limits.
           </div>
         </div>
 
         <!-- 连续自动调用轮数上限 -->
         <div class="nexus-field" style="margin-top: 2px; padding: 6px 10px; background: rgba(0,0,0,0.18); border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.15);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}连续自动调用上限</label>
-            <span id="nexus-steps-val" style="font-size: 12px; font-weight: 700; color: ${CURRENT_THEME.primaryColor};">${CONFIG.maxConsecutiveSteps} 轮</span>
+            <label class="nexus-label" style="margin-bottom: 0; display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}Maximum consecutive tool calls</label>
+            <span id="nexus-steps-val" style="font-size: 12px; font-weight: 700; color: ${CURRENT_THEME.primaryColor};">${CONFIG.maxConsecutiveSteps} steps</span>
           </div>
           <input type="range" id="nexus-cfg-steps" min="1" max="50" step="1" value="${CONFIG.maxConsecutiveSteps}" style="width: 100%; accent-color: ${CURRENT_THEME.primaryColor}; cursor: pointer;" />
           <div style="font-size: 10px; color: var(--nx-text-muted); line-height: 1.3; margin-top: 2px;">
-            * 达到上限后自动暂停；你再发送一条新消息即可重置计数。
+            * Pause at the limit; send a new user task to reset the counter.
           </div>
         </div>
 
         <!-- 自动捕获速率限制重试 Switch -->
         <div class="nexus-switch-row" style="margin-top: 2px;">
-          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}遭遇网页接口限流时自动冷却并恢复</span>
+          <span class="nexus-label" style="font-size: 11px; color: var(--nx-text-muted); display: inline-flex; align-items: center;">${nxSvg("refresh", "nexus-ui-icon")}Retry after a cooldown on rate limits</span>
           <label class="nexus-switch" style="transform: scale(0.85); transform-origin: right center;">
             <input type="checkbox" id="nexus-cfg-retry" ${CONFIG.autoRetry ? "checked" : ""}>
             <span class="nexus-slider"></span>
@@ -3477,12 +3396,12 @@ ${memoryDisplay}
         <!-- MCP 工具清单卡片 -->
         <div>
           <div class="nexus-adv-header" id="nexus-tools-toggle">
-            <span style="display: inline-flex; align-items: center;">${nxSvg("tool", "nexus-ui-icon")}已就绪 MCP 工具 (<span id="nexus-tools-count">14</span> 核心 · 332 原子)</span>
+            <span style="display: inline-flex; align-items: center;">${nxSvg("tool", "nexus-ui-icon")}Available MCP tools (<span id="nexus-tools-count">14</span> core / 332 catalog)</span>
             <span class="nexus-adv-arrow" id="nexus-tools-arrow">▸</span>
           </div>
           <div class="nexus-adv-body" id="nexus-tools-body" style="max-height: 150px; overflow-y: auto;">
             <div id="nexus-tools-list" style="font-size: 11px; color: var(--nx-text-muted); line-height: 1.5;">
-              正在拉取本地 WebAgent 工具清单...
+              Loading local MCP tool list...
             </div>
           </div>
         </div>
@@ -3490,17 +3409,17 @@ ${memoryDisplay}
         <!-- 自定义提示词与精读规则 (折叠) -->
         <div>
           <div class="nexus-adv-header" id="nexus-prompt-toggle">
-            <span style="display: inline-flex; align-items: center;">${nxSvg("pen", "nexus-ui-icon")}自定义提示词与入库规则 (折叠)</span>
+            <span style="display: inline-flex; align-items: center;">${nxSvg("pen", "nexus-ui-icon")}Custom prompts and capture rules</span>
             <span class="nexus-adv-arrow" id="nexus-prompt-arrow">▸</span>
           </div>
           <div class="nexus-adv-body" id="nexus-prompt-body">
             <div class="nexus-field">
-              <label class="nexus-label">长文入库补充规则 (可选)</label>
-              <textarea class="nexus-input" id="nexus-cfg-custom-prompt" rows="2" style="resize: vertical; font-size: 11px; height: 50px;" placeholder="例如：重点提取算法推导和架构决策，过滤引流广告...">${CONFIG.customCapturePrompt}</textarea>
+              <label class="nexus-label">Optional document capture rules</label>
+              <textarea class="nexus-input" id="nexus-cfg-custom-prompt" rows="2" style="resize: vertical; font-size: 11px; height: 50px;" placeholder="e.g. Capture design decisions; ignore promotional content...">${CONFIG.customCapturePrompt}</textarea>
             </div>
             <div class="nexus-field">
-              <label class="nexus-label">默认知识库标签 (逗号分隔)</label>
-              <input class="nexus-input" type="text" id="nexus-cfg-default-tags" placeholder="例如：技术, 逆向, 架构" value="${CONFIG.defaultTags}" />
+              <label class="nexus-label">Default knowledge tags (comma separated)</label>
+              <input class="nexus-input" type="text" id="nexus-cfg-default-tags" placeholder="e.g. engineering, research, architecture" value="${CONFIG.defaultTags}" />
             </div>
           </div>
         </div>
@@ -3508,16 +3427,16 @@ ${memoryDisplay}
         <!-- 高级设置 (折叠) -->
         <div>
           <div class="nexus-adv-header" id="nexus-adv-toggle">
-            <span style="display: inline-flex; align-items: center;">${nxSvg("gear", "nexus-ui-icon")}高级配置 (Token / 端口)</span>
+            <span style="display: inline-flex; align-items: center;">${nxSvg("gear", "nexus-ui-icon")}Advanced settings (token / port)</span>
             <span class="nexus-adv-arrow" id="nexus-adv-arrow">▸</span>
           </div>
           <div class="nexus-adv-body" id="nexus-adv-body">
             <div class="nexus-field">
-              <label class="nexus-label">WebAgent 客户端令牌 (Token)</label>
-              <input class="nexus-input" type="password" id="nexus-cfg-token" placeholder="在 WebAgent 客户端「访问令牌」生成后粘贴 (未启用认证可留空)" value="${CONFIG.token}" />
+              <label class="nexus-label">WebAgent client token</label>
+              <input class="nexus-input" type="password" id="nexus-cfg-token" placeholder="Paste the local client token if authentication is enabled" value="${CONFIG.token}" />
             </div>
             <div class="nexus-field">
-              <label class="nexus-label">WebAgent 服务端地址 (默认 http://127.0.0.1:18080)</label>
+              <label class="nexus-label">WebAgent service address (default http://127.0.0.1:18080)</label>
               <input class="nexus-input" type="text" id="nexus-cfg-url" value="${CONFIG.nexusUrl}" />
             </div>
           </div>
@@ -3640,7 +3559,7 @@ ${memoryDisplay}
       btnSaveInit.addEventListener("click", () => {
         const wsVal = (drawerEl.querySelector("#nexus-init-workspace")?.value || "").trim().replace(/\\/g, "/");
         if (!wsVal) {
-          showToast("请先填写项目工作目录！");
+          showToast("Enter a workspace directory first.");
           return;
         }
         CONFIG.workspace = wsVal;
@@ -3655,7 +3574,7 @@ ${memoryDisplay}
         // 隐藏首次设置卡片
         const card = drawerEl.querySelector("#nexus-first-setup-card");
         if (card) card.style.display = "none";
-        showToast("工作目录配置成功！下一次无需再次配置。");
+        showToast("Workspace saved.");
       });
     }
 
@@ -3665,14 +3584,14 @@ ${memoryDisplay}
       actPromptBtn.addEventListener("click", () => {
         const inputEl = currentAdapter.getInput();
         if (!inputEl) {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
           return;
         }
         const promptText = getCustomAgentPrompt();
         currentAdapter.setValue(inputEl, promptText);
         pill.classList.remove("open");
         drawerEl.classList.remove("show");
-        showToast(`已填入 WebAgent 1.3.3 协作协议，请点击发送！`);
+        showToast(`Collaboration prompt inserted; click Send.`);
       });
     }
 
@@ -3708,7 +3627,7 @@ ${memoryDisplay}
         if (inputEl) {
             currentAdapter.setValue(
               inputEl,
-              `请调用 browser_snapshot 工具获取当前前台活动标签页的页面快照：
+              `Please use browser_snapshot to inspect the active browser tab:
 \`\`\`nexus
 {
   "tool": "browser_snapshot",
@@ -3718,16 +3637,16 @@ ${memoryDisplay}
             );
           pill.classList.remove("open");
           drawerEl.classList.remove("show");
-          showToast("已填入浏览器快照指令，请回车发送！");
+          showToast("Snapshot request inserted; send it when ready.");
         } else {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
         }
       } else if (action === "mem") {
         if (inputEl) {
             currentAdapter.setValue(
               inputEl,
-              `请读取并锚定本项目核心记忆：当前工作区绝对路径为【${CONFIG.workspace}】。
-为了了解项目技术栈与排坑指引，请调用 file_read 工具读取项目记忆文件：
+              `Please inspect the project memory for my workspace at ${CONFIG.workspace}.
+To understand the architecture and known issues, use file_read to inspect:
 \`\`\`nexus
 {
   "tool": "file_read",
@@ -3737,36 +3656,36 @@ ${memoryDisplay}
             );
           pill.classList.remove("open");
           drawerEl.classList.remove("show");
-          showToast("已填入读取项目记忆指令，请回车发送！");
+          showToast("Project-memory request inserted; send it when ready.");
         } else {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
         }
       } else if (action === "ls") {
         if (inputEl) {
-            currentAdapter.setValue(inputEl, `请协助测试插件代码块解析：请调用 file_list 列出工作目录 ${CONFIG.workspace} 下的所有文件，以 \`\`\`nexus 代码块输出。`);
+            currentAdapter.setValue(inputEl, `Please use file_list to show files in ${CONFIG.workspace}. Return one complete \`\`\`nexus tool-call code block.`);
           pill.classList.remove("open");
           drawerEl.classList.remove("show");
-          showToast("已填入查看工作区文件指令，请回车发送！");
+          showToast("File-list request inserted; send it when ready.");
         } else {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
         }
       } else if (action === "git") {
         if (inputEl) {
-            currentAdapter.setValue(inputEl, "请协助测试插件代码块解析：请调用 nexus_discover_tools 检索本地关于 git 的可用工具，以 ```nexus 代码块输出。");
+            currentAdapter.setValue(inputEl, "Please use nexus_discover_tools to find available Git tools and return one complete nexus tool-call block.");
           pill.classList.remove("open");
           drawerEl.classList.remove("show");
-          showToast("已填入检索 Git 工具指令，请回车发送！");
+          showToast("Git-tool search inserted; send it when ready.");
         } else {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
         }
       } else if (action === "ps") {
         if (inputEl) {
-            currentAdapter.setValue(inputEl, "请协助测试插件代码块解析：请调用 localbridge_process_list 工具列出当前电脑上运行的进程，以 ```nexus 代码块输出。");
+            currentAdapter.setValue(inputEl, "Please use the available process-list tool to inspect running processes and return one complete nexus tool-call block.");
           pill.classList.remove("open");
           drawerEl.classList.remove("show");
-          showToast("已填入查看系统进程指令，请回车发送！");
+          showToast("Process-list request inserted; send it when ready.");
         } else {
-          showToast("未检测到当前页面的输入框！");
+          showToast("Could not find a chat input on this page.");
         }
       }
     }
@@ -3781,7 +3700,7 @@ ${memoryDisplay}
       wsInput.addEventListener("input", saveWs);
       wsInput.addEventListener("change", (e) => {
         saveWs(e);
-        showToast("工作目录已更新保存！");
+        showToast("Workspace updated.");
       });
     }
 
@@ -3791,7 +3710,7 @@ ${memoryDisplay}
       reviewSafeBox.addEventListener("change", (e) => {
         CONFIG.reviewSafeMode = e.target.checked;
         GM_setValue("webagent_review_safe_mode", CONFIG.reviewSafeMode); GM_setValue("nexus_review_safe_mode", CONFIG.reviewSafeMode);
-        showToast(`安全润色保护模式: ${CONFIG.reviewSafeMode ? "开启" : "关闭"}`);
+        showToast(`Review-only mode: ${CONFIG.reviewSafeMode ? "enabled" : "disabled"}`);
       });
     }
 
@@ -3801,7 +3720,7 @@ ${memoryDisplay}
       autoBox.addEventListener("change", (e) => {
         CONFIG.autoExecute = e.target.checked;
         GM_setValue("webagent_auto_execute", CONFIG.autoExecute); GM_setValue("nexus_auto_execute", CONFIG.autoExecute);
-        showToast(`自动执行已${CONFIG.autoExecute ? "开启" : "暂停"}`);
+        showToast(`Auto-execution ${CONFIG.autoExecute ? "enabled" : "paused"}`);
       });
     }
 
@@ -3818,7 +3737,7 @@ ${memoryDisplay}
         const val = parseFloat(e.target.value);
         CONFIG.sendDelay = val;
         GM_setValue("webagent_send_delay", val); GM_setValue("nexus_send_delay", val);
-        showToast(`回填延迟已设为 ${val.toFixed(1)} 秒`);
+        showToast(`Feedback delay set to ${val.toFixed(1)} seconds`);
       });
     }
 
@@ -3829,13 +3748,13 @@ ${memoryDisplay}
       stepsSlider.addEventListener("input", (e) => {
         const val = Math.min(50, Math.max(1, parseInt(e.target.value, 10) || 4));
         CONFIG.maxConsecutiveSteps = val;
-        stepsValEl.innerText = `${val} 轮`;
+        stepsValEl.innerText = `${val} steps`;
       });
       stepsSlider.addEventListener("change", (e) => {
         const val = Math.min(50, Math.max(1, parseInt(e.target.value, 10) || 4));
         CONFIG.maxConsecutiveSteps = val;
         GM_setValue("webagent_max_consecutive_steps", val); GM_setValue("nexus_max_consecutive_steps", val);
-        showToast(`连续自动调用上限已设为 ${val} 轮`);
+        showToast(`Maximum consecutive calls set to ${val} steps`);
       });
     }
 
@@ -3845,7 +3764,7 @@ ${memoryDisplay}
       retryBox.addEventListener("change", (e) => {
         CONFIG.autoRetry = e.target.checked;
         GM_setValue("webagent_auto_retry_rate_limit", CONFIG.autoRetry); GM_setValue("nexus_auto_retry_rate_limit", CONFIG.autoRetry);
-        showToast(`频繁限制自动重试已${CONFIG.autoRetry ? "开启" : "关闭"}`);
+        showToast(`Rate-limit retry ${CONFIG.autoRetry ? "enabled" : "disabled"}`);
       });
     }
 
@@ -3876,7 +3795,7 @@ ${memoryDisplay}
       customPromptInput.addEventListener("change", (e) => {
         CONFIG.customCapturePrompt = e.target.value.trim();
         GM_setValue("webagent_custom_capture_prompt", CONFIG.customCapturePrompt); GM_setValue("nexus_custom_capture_prompt", CONFIG.customCapturePrompt);
-        showToast("自定义入库规则已保存！");
+        showToast("Custom capture rules saved.");
       });
     }
 
@@ -3885,7 +3804,7 @@ ${memoryDisplay}
       defaultTagsInput.addEventListener("change", (e) => {
         CONFIG.defaultTags = e.target.value.trim();
         GM_setValue("webagent_default_tags", CONFIG.defaultTags); GM_setValue("nexus_default_tags", CONFIG.defaultTags);
-        showToast("默认标签已保存！");
+        showToast("Default tags saved.");
       });
     }
 
@@ -3906,7 +3825,7 @@ ${memoryDisplay}
       tokenInput.addEventListener("change", (e) => {
         CONFIG.token = e.target.value.trim();
         GM_setValue("webagent_lb_token", CONFIG.token); GM_setValue("nexus_lb_token", CONFIG.token);
-        showToast("Token 已更新！");
+        showToast("Token updated.");
         pingNexus();
       });
     }
@@ -3916,7 +3835,7 @@ ${memoryDisplay}
       urlInput.addEventListener("change", (e) => {
         CONFIG.nexusUrl = e.target.value.trim();
         GM_setValue("webagent_bridge_url", CONFIG.nexusUrl); GM_setValue("nexus_bridge_url", CONFIG.nexusUrl);
-        showToast("服务地址已更新！");
+        showToast("Service address updated.");
         pingNexus();
       });
     }
@@ -3992,7 +3911,7 @@ ${memoryDisplay}
         }
         const targetEl = (block.matches && block.matches("pre, pre code, code-block, ms-code-block, .cm-content, .monaco-editor")) ? block : block.closest?.("pre, code-block") || block.parentElement || block;
         const raw = nexBlockText(targetEl).trim();
-        if (raw.includes('"tool"') && !tryParseToolJson(raw)) console.warn("[WebAgent] 代码块含 tool 但解析失败，前200字符:", raw.slice(0, 200));
+        if (raw.includes('"tool"') && !tryParseToolJson(raw)) console.warn("[WebAgent] Tool call JSON could not be parsed (first 200 chars):", raw.slice(0, 200));
         const obj = tryParseToolJson(raw);
         if (obj) return obj;
       }
@@ -4001,7 +3920,7 @@ ${memoryDisplay}
       for (const block of codeBlocks) {
         const targetEl = (block.matches && block.matches("pre, pre code, code-block, ms-code-block, .cm-content, .monaco-editor")) ? block : block.closest?.("pre, code-block") || block.parentElement || block;
         const raw = nexBlockText(targetEl).trim();
-        if (raw.includes('"tool"') && !tryParseToolJson(raw)) console.warn("[WebAgent] 代码块含 tool 但解析失败，前200字符:", raw.slice(0, 200));
+        if (raw.includes('"tool"') && !tryParseToolJson(raw)) console.warn("[WebAgent] Tool call JSON could not be parsed (first 200 chars):", raw.slice(0, 200));
         const obj = tryParseToolJson(raw);
         if (obj) return obj;
       }
@@ -4314,16 +4233,16 @@ ${memoryDisplay}
   function requestContinuation() {
     const inputEl = currentAdapter.getInput();
     if (!inputEl) return;
-    const prompt = "⚠️ 检测到上一条回复的 ```nexus 工具调用代码块输出未完整被截断。请紧接上文未写完的地方直接继续输出剩余内容，并务必闭合 ```nexus 代码块，不要重复前文。";
+    const prompt = "The previous nexus tool-call block was truncated. Continue from the last character, close the fenced block, and do not repeat earlier text.";
     currentAdapter.setValue(inputEl, prompt);
     setTimeout(() => {
       const sendBtn = currentAdapter.getSendBtn();
       if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute("aria-disabled") !== "true") {
         sendBtn.click();
-        showToast("🧩 已自动触发【继续输出】拼接请求...");
+        showToast("🧩 Requested continuation of incomplete output...");
       } else {
         dispatchSubmit(inputEl);
-        showToast("🧩 已自动回车触发【继续输出】拼接请求...");
+        showToast("🧩 Sent a continuation request...");
       }
     }, 400);
   }
@@ -4374,7 +4293,7 @@ ${memoryDisplay}
     if (isHandingOver) return;
     isHandingOver = true;
 
-    showToast("🚨 检测到会话已达长度上限！正在打包任务断点，自动开辟新对话无缝续传...");
+    showToast("🚨 Context limit detected; saving task state and opening a new conversation...");
 
     const state = getHandoverState();
     state.hasPendingHandover = true;
@@ -4390,7 +4309,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 DeepSeek 新建对话...");
+          showToast("🚀 Created a new DeepSeek chat...");
         } else {
           window.location.href = "https://chat.deepseek.com/";
         }
@@ -4400,7 +4319,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 Kimi 新建对话...");
+          showToast("🚀 Created a new Kimi chat...");
         } else {
           window.location.href = "https://kimi.moonshot.cn/";
         }
@@ -4410,7 +4329,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 Duck.ai 新建对话...");
+          showToast("🚀 Created a new Duck.ai chat...");
         } else {
           window.location.href = "https://duck.ai/";
         }
@@ -4420,7 +4339,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 豆包 新建对话...");
+          showToast("🚀 Created a new Doubao chat...");
         } else {
           window.location.href = "https://www.doubao.com/chat/";
         }
@@ -4430,7 +4349,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 通义千问 新建对话...");
+          showToast("🚀 Created a new Qwen chat...");
         } else {
           window.location.href = "https://chat.qwen.ai/";
         }
@@ -4440,7 +4359,7 @@ ${memoryDisplay}
         );
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 Dola 新建对话...");
+          showToast("🚀 Created a new Dola chat...");
         } else {
           window.location.href = "https://www.dola.com/chat";
         }
@@ -4448,7 +4367,7 @@ ${memoryDisplay}
         const newChatBtn = document.querySelector("a[data-testid='create-new-chat-button'], button[aria-label*='New chat' i]");
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 ChatGPT 新建对话...");
+          showToast("🚀 Created a new ChatGPT chat...");
         } else {
           window.location.href = "https://chatgpt.com/";
         }
@@ -4456,7 +4375,7 @@ ${memoryDisplay}
         const newChatBtn = document.querySelector("[data-test-id='new-chat-button'] a, a[aria-label*='New chat' i], button[aria-label*='New chat' i]");
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 Gemini 新建对话...");
+          showToast("🚀 Created a new Gemini chat...");
         } else {
           window.location.href = window.location.origin + "/app";
         }
@@ -4466,7 +4385,7 @@ ${memoryDisplay}
         const newChatBtn = document.querySelector("#sidebar-new-chat-button");
         if (newChatBtn) {
           newChatBtn.click();
-          showToast("🚀 已自动触发 Z.ai 新建对话...");
+          showToast("🚀 Created a new Z.ai chat...");
         } else {
           window.location.href = window.location.origin + "/";
         }
@@ -4502,33 +4421,29 @@ ${memoryDisplay}
 
     const ws = (state.workspace || CONFIG.workspace || "").replace(/\\/g, "/");
     const stepsText = (state.recentSteps && state.recentSteps.length > 0)
-      ? state.recentSteps.map(s => `  - 步骤 ${s.step}: 调用工具 [${s.tool}] -> ${s.summary}`).join("\n")
-      : "  - 暂无历史步骤，直接开始执行";
+      ? state.recentSteps.map(s => `  - Step ${s.step}: tool [${s.tool}] -> ${s.summary}`).join("\n")
+      : "  - No previous tool steps recorded";
 
-    const resumePrompt = `【系统自愈：跨会话无缝续传任务】
-上一轮会话因达到平台上下文长度限制已自动安全归档。自动化控制桥已为您自动开辟全新会话，并完整同步上文工程断点与执行上下文：
-
-【当前项目硬锚点与工作区】
-- 默认工作目录: ${ws}
-- 核心任务目标: ${state.lastUserGoal || "全栈工程开发任务"}
-
-【上文已完成的历史步骤断点快照】
-${stepsText}
-
-【当前待执行的下一步操作】
-请紧接上述历史步骤与最新断点结果，直接输出一个标准的 \`\`\`nexus 代码块执行下一步工具，不要任何多余口头闲聊！`;
+    const resumePrompt = [
+      "Task continuation after the previous chat reached its context limit.",
+      "Workspace: " + ws,
+      "User task: " + (state.lastUserGoal || "continue the previously requested task"),
+      "Recorded steps:",
+      stepsText,
+      "Review the recorded results, then request only the next necessary tool call in a complete nexus code block. Do not repeat completed actions."
+    ].join("\n");
 
     currentAdapter.setValue(inputEl, resumePrompt);
-    showToast("🧩 正在全新会话中自动注入跨会话断点快照...");
+    showToast("🧩 Inserting the saved task state in the new chat...");
 
     setTimeout(() => {
       const sendBtn = currentAdapter.getSendBtn();
       if (sendBtn && !sendBtn.disabled && sendBtn.getAttribute("aria-disabled") !== "true") {
         sendBtn.click();
-        showToast("🚀 跨会话无缝续传成功！AI 已在全新空间无缝接续任务。");
+        showToast("🚀 Task state transferred to a new conversation.");
       } else {
         dispatchSubmit(inputEl);
-        showToast("🚀 跨会话无缝续传成功 (回车提交)！");
+        showToast("🚀 Task state sent in the new conversation.");
       }
       isHandingOver = false;
     }, 600);
@@ -4623,7 +4538,7 @@ ${stepsText}
       // 连续 3 帧 (1.5秒) 确认回复文本已彻底稳定终止
       if (lastStableTicks >= 3) {
         if ((PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") && lastStableTicks === 3) {
-          console.log(`[Nexus ${CURRENT_THEME.name}] 回复稳定完毕，正在检索工具调用代码块...`, {
+          console.log(`[Nexus ${CURRENT_THEME.name}] Response complete; searching for a tool-call block...`, {
             textLen: currentText.length,
             hasPre: Boolean(document.querySelector("pre")),
             node: lastNode ? `${lastNode.tagName}.${String(lastNode.className || "").slice(0, 80)}` : null,
@@ -4649,7 +4564,7 @@ ${stepsText}
         if (danglingBlockState.isWaitingContinuation) {
           toolCall = tryStitchContinuation(danglingBlockState.accumulatedCode, currentText, lastNode);
           if (toolCall) {
-            showToast("🧩 成功拼接截断的代码块，准备执行...");
+            showToast("🧩 Reassembled a truncated tool block; checking before execution...");
             danglingBlockState.isWaitingContinuation = false;
             danglingBlockState.accumulatedCode = "";
             danglingBlockState.retryCount = 0;
@@ -4666,14 +4581,14 @@ ${stepsText}
           const recovered = detectAndRecoverRefusal(currentText);
           if (recovered) {
             toolCall = recovered;
-            showToast("⚡ 捕获到模型拒答/说教，WebAgent 自愈引擎已代为在桌面拉起 CMD！");
+            showToast("⚡ A refusal was detected; check the task manually.");
           }
         }
         }
 
         if (toolCall) {
           if (PLATFORM === "duckai" || PLATFORM === "doubao" || PLATFORM === "qwen" || PLATFORM === "dola") {
-            console.log(`[Nexus ${CURRENT_THEME.name}] 🎯 成功捕获工具调用代码块:`, toolCall);
+            console.log(`[Nexus ${CURRENT_THEME.name}] 🎯 Detected tool-call block:`, toolCall);
           }
           lastHandledMessageSignature = sig;
           handleToolCallAutomatically(toolCall);
@@ -4685,7 +4600,7 @@ ${stepsText}
             danglingBlockState.isWaitingContinuation = true;
             danglingBlockState.accumulatedCode = truncatedSnippet;
             danglingBlockState.retryCount = 1;
-            showToast("⚠️ 检测到工具调用被截断未闭合，正在自动请求续写拼接 (仅限 1 次)...");
+            showToast("⚠️ Tool block is truncated; requesting one continuation...");
             requestContinuation();
           }
         }
@@ -4747,19 +4662,19 @@ ${stepsText}
 
   function handleToolCallAutomatically(toolCall) {
     if (!CONFIG.autoExecute) {
-      showToast(`检测到 AI 请求调用 MCP [${toolCall.tool}]，当前处于手动确认模式`);
+      showToast(`MCP call [${toolCall.tool}] needs manual confirmation`);
       return;
     }
 
     if (isAutoDispatchSuspended) {
-      showToast("⏸️ 连续调度已安全熔断暂停，请手动发送指令或点击面板恢复");
+      showToast("⏸️ Automatic execution paused by the safety limit; review before resuming");
       return;
     }
 
     // 严格工具白名单防死循环机制：非合法工具绝不执行、绝不向对话回填错误
     if (!isLikelyValidTool(toolCall.tool)) {
-      console.warn(`[Nexus Web Agent] 忽略非合法 MCP 工具调用:`, toolCall.tool);
-      showToast(`⚠️ 忽略非 Nexus MCP 工具调用 [${toolCall.tool}]，已阻止无效循环`);
+      console.warn(`[Nexus Web Agent] Rejected invalid MCP tool call:`, toolCall.tool);
+      showToast(`⚠️ Rejected unknown MCP tool [${toolCall.tool}]`);
       return;
     }
 
@@ -4769,11 +4684,11 @@ ${stepsText}
       duplicateToolCallCount++;
       // 允许连续推进（如连续刷视频、滚动翻页），仅在连续 3 次相同且页面无变化时温和提醒
       if (duplicateToolCallCount >= 3) {
-        showToast(`⏸️ 连续 3 次执行相同操作 [${toolCall.tool}]，已温和暂停以防卡死`);
+        showToast(`⏸️ Repeated tool [${toolCall.tool}] three times; paused to prevent a loop`);
         duplicateToolCallCount = 0;
         lastExecutedToolSig = "";
         isAutoDispatchSuspended = true;
-        const terminationNotice = "【WebAgent 智能防护提醒】\n- 检测到连续多次执行完全相同的操作与参数 [" + toolCall.tool + "]。\n- 为防止不必要的循环与 Token 浪费，自动化调度已温和暂停。\n- 请像人类一样，转用自然语言向用户总结汇报当前进度与屏幕所见，或询问用户下一步意图。";
+        const terminationNotice = "WebAgent paused automatic execution after repeated identical tool calls: " + toolCall.tool + ". Summarize the verified progress for the user or ask for a new instruction.";
         safeDispatchFeedbackToChat(terminationNotice, toolCall.tool);
         return;
       }
@@ -4785,14 +4700,14 @@ ${stepsText}
     // 2. 连续最大步数熔断保护 (防止模型没完没了做下去)
     const maxSteps = parseInt(CONFIG.maxConsecutiveSteps, 10) || 4;
     if (consecutiveAutoDispatches >= maxSteps) {
-      showToast(`🛑 达到连续自动调用上限 (${maxSteps}轮)，已自动熔断暂停以防死循环！`);
+      showToast(`🛑 Maximum of ${maxSteps} calls reached; automation paused.`);
       isAutoDispatchSuspended = true;
-      const fuseNotice = "【WebAgent 自动执行熔断保护】\n- 已连续自动执行 " + maxSteps + " 轮工具调用。为了防止任务无休止继续与 Token 耗尽，系统已启动安全熔断。\n- 请直接向用户总结汇报当前已经完成的工作进展、已获取的数据以及最终结论。";
+      const fuseNotice = "WebAgent stopped after " + maxSteps + " consecutive tool calls. Summarize verified work and wait for a new user instruction.";
       safeDispatchFeedbackToChat(fuseNotice, toolCall.tool);
       return;
     }
 
-    showToast(`⚡ 正在调用 MCP 工具: ${toolCall.tool}...`);
+    showToast(`⚡ Calling MCP tool: ${toolCall.tool}...`);
 
     executeNexusTool(toolCall.tool, toolCall.args, (res) => {
       let feedbackText = "";
@@ -4814,7 +4729,7 @@ ${stepsText}
                 if (typeof val === "string" && (val.startsWith("data:image/") || (val.length > 500 && /^[A-Za-z0-9+/=]+$/.test(val.slice(0, 200))))) {
                   isImage = true;
                   const byteSize = Math.round((val.length * 3) / 4);
-                  obj[key] = `[📷 图像 Base64 数据已智能截断 (${Math.round(byteSize / 1024)} KB)。已防止超出大模型上下文长度限制]`;
+                  obj[key] = `[📷 Image Base64 was truncated (${Math.round(byteSize / 1024)} KB)。to limit model context usage]`;
                 } else if (typeof val === "object") {
                   checkAndSanitize(val);
                 }
@@ -4826,7 +4741,7 @@ ${stepsText}
           }
         } else if (typeof sanitizedResult === "string" && sanitizedResult.length > 5000 && /^[A-Za-z0-9+/=]+$/.test(sanitizedResult.slice(100, 300))) {
           isImage = true;
-          sanitizedResult = `[📷 原始图像 Base64 数据超长 (${sanitizedResult.length} 字符)，已智能截断防止上下文溢出]`;
+          sanitizedResult = `[📷 Oversized image Base64 (${sanitizedResult.length} characters); truncated to limit context usage]`;
         }
 
         // 智能网页快照深度脱水瘦身：剔除冗余的 DOM 物理坐标对象与重复容器，节省 90% 以上 Token
@@ -4854,7 +4769,7 @@ ${stepsText}
                   const cleanedLines = lines.map(line => line.replace(/(\S+)\?[^\s"]+/g, "$1"));
                   if (cleanedLines.length > 35) {
                     const head = cleanedLines.slice(0, 35);
-                    head.push("... [已精简省略余下 " + (cleanedLines.length - 35) + " 个非核心元素以节省 Token]");
+                    head.push("... [Omitted " + (cleanedLines.length - 35) + " nonessential elements to save tokens]");
                     slim.compact_marks = head.join("\n");
                   } else {
                     slim.compact_marks = cleanedLines.join("\n");
@@ -4868,28 +4783,28 @@ ${stepsText}
 
         dataStr = typeof sanitizedResult === "string" ? sanitizedResult : JSON.stringify(sanitizedResult, null, 2);
         const extraNote = isImage
-          ? "\n\n💡【图像提示】：检测到工具输出了高分辨率截图。纯文本框无法直接消费海量 Base64 像素（会直接撑爆 Token 上下文）。若需深度视觉分析，推荐在原生支持多模态附件的 ChatGPT / Kimi 中使用附件上传。"
+          ? "\n\nImage notice: The tool produced a large screenshot. Use the chat interface\'s native image attachment support for visual analysis; the plain text box cannot consume raw image Base64."
           : "";
 
         // 全局通用数据 Token 保险丝：超过 3500 字符时智能截断中间内容
         if (dataStr.length > 3500) {
-          dataStr = dataStr.slice(0, 2200) + "\n\n... [⚠️ 执行返回结果过长 (共 " + dataStr.length + " 字符)，已智能截取首尾关键数据以节省 Token] ...\n\n" + dataStr.slice(-1000);
+          dataStr = dataStr.slice(0, 2200) + "\n\n... [⚠️ Tool result too long (total " + dataStr.length + " characters); kept head and tail to reduce context use] ...\n\n" + dataStr.slice(-1000);
         }
-        feedbackText = "【WebAgent 1.3.3 本地 MCP 执行结果反馈】\n- 调用工具: " + toolCall.tool + "\n- 执行状态: 成功\n- 返回数据:\n```json\n" + dataStr + "\n```" + extraNote + "\n---\n💡【任务状态与终结指引】：\n1. 若用户的初始目标已完成（例如已成功打开网页/写入文件/执行完命令/已获取所需数据），【请立即停止调用任何工具】，直接用自然语言向用户汇报最终结果并结束本次任务！\n2. 严禁在目标达成后无意义重复调用相同工具或强行进行多余的操作。\n3. 仅当用户的初始任务确实尚未完成且必须执行下一步时，才允许输出下一个 ```nexus 代码块。";
+        feedbackText = "WebAgent MCP execution result\nTool: " + toolCall.tool + "\nStatus: success\nResult:\n```json\n" + dataStr + "\n```" + extraNote + "\nIf the original user task is complete, stop using tools and summarize the verified result. Otherwise request only the next necessary tool call.";
       } else {
         consecutiveErrors++;
         // 若同一任务连续失败 5 次，停止自动回填，防止模型在报错中无限死循环
         if (consecutiveErrors >= 5) {
-          showToast(`❌ 工具 [${toolCall.tool}] 连续失败: ${res.error}，已停止自动回传以防死循环`);
+          showToast(`❌ Tool [${toolCall.tool}] failed repeatedly: ${res.error}，automatic feedback paused`);
           consecutiveErrors = 0;
           return;
         }
         consecutiveAutoDispatches++;
-        feedbackText = `【WebAgent 1.3.3 本地 MCP 执行错误报告】\n- 调用工具: ${toolCall.tool}\n- 失败原因: ${res.error}\n---\n（请根据报错调整参数或换用其他工具重试）`;
+        feedbackText = `WebAgent MCP execution error\nTool: ${toolCall.tool}\nError: ${res.error}\nReview the error and adjust the next tool call if appropriate.`;
       }
 
       // 实时记录到跨会话断点任务历史中
-      recordTaskStep(toolCall.tool, toolCall.args, res.ok ? (dataStr || "").slice(0, 180) : `失败: ${res.error}`);
+      recordTaskStep(toolCall.tool, toolCall.args, res.ok ? (dataStr || "").slice(0, 180) : `Failed: ${res.error}`);
 
       // 通过安全防频繁缓冲队列发回给网页端
       safeDispatchFeedbackToChat(feedbackText, toolCall.tool);
@@ -4907,13 +4822,13 @@ ${stepsText}
       countdownTimer = null;
     }
 
-    showToast(`⏳ MCP [${toolName}] 执行成功！安全防风控冷却: ${(remainingMs / 1000).toFixed(1)}s`);
+    showToast(`⏳ MCP [${toolName}] succeeded; cooldown: ${(remainingMs / 1000).toFixed(1)}s`);
 
     const interval = 500;
     countdownTimer = setInterval(() => {
       remainingMs -= interval;
       if (remainingMs > 0) {
-        showToast(`⏳ 安全防频繁冷却: ${(remainingMs / 1000).toFixed(1)}s...`);
+        showToast(`⏳ Cooldown: ${(remainingMs / 1000).toFixed(1)}s...`);
       } else {
         clearInterval(countdownTimer);
         countdownTimer = null;
@@ -4924,14 +4839,14 @@ ${stepsText}
     function triggerFinalSend() {
       // 检查模型是否还在生成中，若仍在生成则微等 500ms
       if (currentAdapter.isGenerating()) {
-        showToast("⏳ 网页仍在输出或保存会话，等待就绪...");
+        showToast("⏳ Waiting for chat generation or save to finish...");
         setTimeout(triggerFinalSend, 500);
         return;
       }
 
       const inputEl = currentAdapter.getInput();
       if (!inputEl) {
-        showToast("⚠️ 未找到输入框，请手动复制结果");
+        showToast("⚠️ Chat input not found; copy the result manually");
         return;
       }
 
@@ -4949,10 +4864,10 @@ ${stepsText}
 
         if (isBtnReady) {
           sendBtn.click();
-          showToast("🚀 已将 MCP 执行结果安全提交给 AI！");
+          showToast("🚀 MCP result sent to the AI chat.");
         } else {
           dispatchSubmit(inputEl);
-          showToast("🚀 已通过回车安全提交 MCP 结果！");
+          showToast("🚀 MCP result submitted with Enter.");
         }
       }, 400);
     }
@@ -4990,7 +4905,7 @@ ${stepsText}
     // 连续重试达上限后，1 分钟内只提示一次，绝不弹窗轰炸
     if (retryCountForCurrentError >= 3) {
       if (now - lastSpamWarningTime > 60000) {
-        showToast("⚠️ 平台限频较为严格，请稍等片刻后手动重试");
+        showToast("⚠️ Rate limit reached; wait and retry manually");
         lastSpamWarningTime = now;
       }
       return;
@@ -5000,7 +4915,7 @@ ${stepsText}
     lastRateLimitHandledTime = now;
     retryCountForCurrentError++;
 
-    showToast(`⚠️ 捕获到网页频繁限制！安全冷却 3.5 秒后自动重试 (${retryCountForCurrentError}/3)...`);
+    showToast(`⚠️ Rate-limited; retrying after 3.5 seconds (${retryCountForCurrentError}/3)...`);
 
     setTimeout(() => {
       // 1. 优先定位页面上的重试/刷新按钮 (DeepSeek 橙色圆圈 🔄)
@@ -5027,7 +4942,7 @@ ${stepsText}
 
       if (retryBtn) {
         retryBtn.click();
-        showToast("🔄 已自动点击网页重试按钮！");
+        showToast("🔄 Clicked the retry button.");
       } else if (latestFeedbackText) {
         // 2. 备用方案：重新填入最新执行反馈并发送
         const inputEl = currentAdapter.getInput();
@@ -5040,7 +4955,7 @@ ${stepsText}
             } else {
               dispatchSubmit(inputEl);
             }
-            showToast("🔄 已重新安全提交 MCP 执行结果！");
+            showToast("🔄 Resent the MCP result.");
           }, 400);
         }
       }
@@ -5056,14 +4971,14 @@ ${stepsText}
       return;
     }
     window.__NEXUS_AGENT_INITIALIZED__ = true;
-    console.log(`[Nexus Web Agent v3.11.1 True MCP Edition] 启动成功，当前适配平台: ${CURRENT_THEME.name}`);
+    console.log(`[Nexus Web Agent v3.11.1 True MCP Edition] Started; current adapter: ${CURRENT_THEME.name}`);
     try {
       injectThemeStyles();
       createAgentUI();
       pingNexus();
       startReActLoop();
 } catch (err) {
-      console.error("[Nexus Web Agent] 初始化异常:", err);
+      console.error("[Nexus Web Agent] Initialization error:", err);
     }
   }
 

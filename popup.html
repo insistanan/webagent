@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WebAgent 1.3.3 控制中心</title>
+  <title>WebAgent 1.3.3 Control Center</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -14,11 +14,11 @@
         <span class="version">v1.3.3 (Web AI MCP Bridge)</span>
       </div>
     </div>
-    <div class="status-badge" id="bridgeStatusBadge">检测中...</div>
+    <div class="status-badge" id="bridgeStatusBadge">Checking...</div>
   </div>
 
   <div class="card">
-    <div class="card-title">🌐 本地服务状态</div>
+    <div class="card-title">🌐 Local Service Status</div>
     <div class="stat-row">
       <span>WebAgent Bridge (18080)</span>
       <span class="badge" id="mcpBridgeStatus">--</span>
@@ -26,11 +26,11 @@
   </div>
 
   <div class="card">
-    <div class="card-title">⚙️ 智能体运行策略</div>
+    <div class="card-title">⚙️ Automation Settings</div>
     <div class="setting-item">
       <div class="setting-label">
-        <strong>自动执行工具调用</strong>
-        <p>检测到 AI 输出工具代码块时自动调度</p>
+        <strong>Automatically Execute Tool Calls</strong>
+        <p>Run recognized AI tool-call blocks automatically</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="autoExecuteToggle" checked>
@@ -40,8 +40,8 @@
 
     <div class="setting-item">
       <div class="setting-label">
-        <strong>自动遭遇限流冷却重试</strong>
-        <p>网页模型遇到速率限制时自动冷却并重发</p>
+        <strong>Auto-Retry After Rate Limits</strong>
+        <p>Retry after a cooldown when the web AI rate-limits requests</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="autoRetryToggle" checked>
@@ -51,8 +51,8 @@
 
     <div class="setting-item">
       <div class="setting-label">
-        <strong>安全润色保护模式</strong>
-        <p>仅追加批注建议，严禁直接覆盖原文</p>
+        <strong>Review-Only Editing Mode</strong>
+        <p>Suggest edits without overwriting the original text</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="safeModeToggle" checked>
@@ -62,20 +62,20 @@
   </div>
 
   <div class="card">
-    <div class="card-title">📁 工作区与路径配置</div>
+    <div class="card-title">📁 Workspace and Path Settings</div>
     <div class="input-group">
-      <label>默认工作目录 (支持全盘任意路径):</label>
-      <input type="text" id="workspacePathInput" placeholder="例如: C:/workspace (留空需每次自行指定)">
+      <label>Default workspace directory (absolute path):</label>
+      <input type="text" id="workspacePathInput" placeholder="e.g. C:/workspace (leave empty to specify per task)">
     </div>
       </div>
 
   <div class="actions">
-    <button id="injectPromptBtn" class="btn btn-primary">📋 复制增强协作协议</button>
-    <button id="saveConfigBtn" class="btn btn-secondary">💾 保存配置</button>
+    <button id="injectPromptBtn" class="btn btn-primary">📋 Copy Collaboration Prompt</button>
+    <button id="saveConfigBtn" class="btn btn-secondary">💾 Save Settings</button>
   </div>
 
   <div class="footer">
-    <span>💡 提示：在 DeepSeek / ChatGPT / Duck.ai 等页面顶部已自动浮动药丸面板</span>
+    <span>💡 Tip: Open a supported web AI chat to find the floating WebAgent panel</span>
   </div>
 
   <script src="popup.js"></script>
