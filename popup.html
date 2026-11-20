@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WebAgent 1.3.3 Control Center</title>
+  <title>WebAgent Control Center</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -11,26 +11,77 @@
       <div class="logo-icon">🚀</div>
       <div class="logo-info">
         <h3>WebAgent</h3>
-        <span class="version">v1.3.3 (Web AI MCP Bridge)</span>
+        <span class="version" id="versionText">v1.3.4 (Web AI MCP Bridge)</span>
       </div>
     </div>
     <div class="status-badge" id="bridgeStatusBadge">Checking...</div>
   </div>
 
+  <!-- 1. General Settings: Language Switcher -->
   <div class="card">
-    <div class="card-title">🌐 Local Service Status</div>
+    <div class="card-title" id="langCardTitle">🌐 General Settings</div>
+    <div class="sub-label" id="langSubLabel">Interface Language</div>
+    <div class="lang-grid">
+      <div class="lang-btn active" data-lang="en-US">
+        <span class="lang-name">English</span>
+        <span class="lang-code">en-US</span>
+      </div>
+      <div class="lang-btn" data-lang="zh-CN">
+        <span class="lang-name">简体中文</span>
+        <span class="lang-code">zh-CN</span>
+      </div>
+      <div class="lang-btn" data-lang="ja-JP">
+        <span class="lang-name">日本語</span>
+        <span class="lang-code">ja-JP</span>
+      </div>
+      <div class="lang-btn" data-lang="de-DE">
+        <span class="lang-name">Deutsch</span>
+        <span class="lang-code">de-DE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Data Privacy & Desensitization -->
+  <div class="card">
+    <div class="card-title" id="privacyCardTitle">🛡️ Data Privacy & Security</div>
+    <div class="setting-item">
+      <div class="setting-label">
+        <strong id="desensitizeLabel">Data Desensitization</strong>
+        <p id="desensitizeDesc">Mask API keys, tokens, paths & passwords in chat</p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="desensitizeToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 3. Nexus Skills Integration -->
+  <div class="card">
+    <div class="card-title" id="skillsCardTitle">⚡ Nexus Skills Integration</div>
+    <div class="stat-row">
+      <span id="skillsStatusLabel">Connected Skills</span>
+      <span class="badge" id="skillsCountBadge">Checking...</span>
+    </div>
+    <div class="skill-list" id="skillsListContainer" style="display:none;"></div>
+  </div>
+
+  <!-- 4. Local Service Status -->
+  <div class="card">
+    <div class="card-title" id="statusCardTitle">🌐 Local Service Status</div>
     <div class="stat-row">
       <span>WebAgent Bridge (18080)</span>
       <span class="badge" id="mcpBridgeStatus">--</span>
     </div>
   </div>
 
+  <!-- 5. Agent Execution Policy -->
   <div class="card">
-    <div class="card-title">⚙️ Automation Settings</div>
+    <div class="card-title" id="policyCardTitle">⚙️ Agent Execution Policy</div>
     <div class="setting-item">
       <div class="setting-label">
-        <strong>Automatically Execute Tool Calls</strong>
-        <p>Run recognized AI tool-call blocks automatically</p>
+        <strong id="autoExecuteLabel">Auto Execute Tool Calls</strong>
+        <p id="autoExecuteDesc">Auto-dispatch when AI outputs code blocks</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="autoExecuteToggle" checked>
@@ -40,8 +91,8 @@
 
     <div class="setting-item">
       <div class="setting-label">
-        <strong>Auto-Retry After Rate Limits</strong>
-        <p>Retry after a cooldown when the web AI rate-limits requests</p>
+        <strong id="autoRetryLabel">Auto Rate Limit Retry</strong>
+        <p id="autoRetryDesc">Cooldown and retry on model rate limit</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="autoRetryToggle" checked>
@@ -51,8 +102,8 @@
 
     <div class="setting-item">
       <div class="setting-label">
-        <strong>Review-Only Editing Mode</strong>
-        <p>Suggest edits without overwriting the original text</p>
+        <strong id="safeModeLabel">Safe Review Mode</strong>
+        <p id="safeModeDesc">Append review notes without overwriting</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="safeModeToggle" checked>
@@ -61,21 +112,23 @@
     </div>
   </div>
 
+  <!-- 6. Workspace Path -->
   <div class="card">
-    <div class="card-title">📁 Workspace and Path Settings</div>
+    <div class="card-title" id="workspaceCardTitle">📁 Workspace & Path Configuration</div>
     <div class="input-group">
-      <label>Default workspace directory (absolute path):</label>
-      <input type="text" id="workspacePathInput" placeholder="e.g. C:/workspace (leave empty to specify per task)">
+      <label id="workspaceLabel">Default Working Directory (any system path):</label>
+      <input type="text" id="workspacePathInput" placeholder="e.g. C:/workspace (optional)">
     </div>
-      </div>
+  </div>
 
+  <!-- Actions -->
   <div class="actions">
-    <button id="injectPromptBtn" class="btn btn-primary">📋 Copy Collaboration Prompt</button>
-    <button id="saveConfigBtn" class="btn btn-secondary">💾 Save Settings</button>
+    <button id="injectPromptBtn" class="btn btn-primary">📋 Copy Protocol</button>
+    <button id="saveConfigBtn" class="btn btn-secondary">💾 Save Config</button>
   </div>
 
   <div class="footer">
-    <span>💡 Tip: Open a supported web AI chat to find the floating WebAgent panel</span>
+    <span id="footerTipText">💡 Tip: The floating control pill is active at the top of AI chat pages</span>
   </div>
 
   <script src="popup.js"></script>
