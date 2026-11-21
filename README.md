@@ -120,7 +120,32 @@ git clone https://github.com/ysunyang4/webagent.git
 
 ---
 
-## 7. License
+## 7. 💖 Sponsor & Support
+
+If **WebAgent 2.0** has enhanced your daily AI workflow or boosted your productivity, consider buying the author a coffee ☕!
+
+Your generous support helps sustain continuous open-source maintenance, new web model adapters, and protocol enhancements.
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="260">
+        <img src="assets/wechat-pay.jpg" width="220" alt="WeChat Pay (微信支付)" style="border-radius: 12px;" /><br />
+        <br />
+        <b>WeChat Pay (微信支付)</b>
+      </td>
+      <td align="center" width="260">
+        <img src="assets/alipay.jpg" width="220" alt="Alipay (支付宝)" style="border-radius: 12px;" /><br />
+        <br />
+        <b>Alipay (支付宝)</b>
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 8. License
 
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for details.
 
