@@ -3038,17 +3038,39 @@
         box-shadow: none;
       }
 
-      /* 滚动条美化 */
+      /* 滚动条美化 (设置中心及各子模块专属滑动条) */
       .nexus-cselect-menu::-webkit-scrollbar,
       .nexus-drawer::-webkit-scrollbar,
-      .nexus-adv-body::-webkit-scrollbar {
-        width: 5px;
+      .nexus-adv-body::-webkit-scrollbar,
+      #nexus-view-settings::-webkit-scrollbar,
+      .nexus-scroll-list::-webkit-scrollbar,
+      #nexus-tools-list::-webkit-scrollbar,
+      #nexus-skills-list::-webkit-scrollbar {
+        width: 6px;
+      }
+      .nexus-cselect-menu::-webkit-scrollbar-track,
+      .nexus-drawer::-webkit-scrollbar-track,
+      .nexus-adv-body::-webkit-scrollbar-track,
+      #nexus-view-settings::-webkit-scrollbar-track,
+      .nexus-scroll-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 4px;
       }
       .nexus-cselect-menu::-webkit-scrollbar-thumb,
       .nexus-drawer::-webkit-scrollbar-thumb,
-      .nexus-adv-body::-webkit-scrollbar-thumb {
-        background: var(--nx-divider, rgba(148, 163, 184, 0.25));
+      .nexus-adv-body::-webkit-scrollbar-thumb,
+      #nexus-view-settings::-webkit-scrollbar-thumb,
+      .nexus-scroll-list::-webkit-scrollbar-thumb {
+        background: var(--nx-primary, #3B82F6);
         border-radius: 4px;
+        opacity: 0.85;
+      }
+      .nexus-cselect-menu::-webkit-scrollbar-thumb:hover,
+      .nexus-drawer::-webkit-scrollbar-thumb:hover,
+      .nexus-adv-body::-webkit-scrollbar-thumb:hover,
+      #nexus-view-settings::-webkit-scrollbar-thumb:hover,
+      .nexus-scroll-list::-webkit-scrollbar-thumb:hover {
+        background: var(--nx-primary-hover, #2563EB);
       }
       .nexus-view-container {
         display: flex;
@@ -3056,12 +3078,14 @@
         gap: 8px;
       }
       #nexus-view-settings {
-        max-height: 74vh;
-        overflow-y: auto;
+        max-height: min(72vh, 580px);
+        overflow-y: auto !important;
         overflow-x: hidden;
-        padding-right: 3px;
-        padding-bottom: 24px;
+        padding-right: 5px;
+        padding-bottom: 38px;
         box-sizing: border-box;
+        scrollbar-width: thin;
+        scrollbar-color: var(--nx-primary, #3B82F6) rgba(0, 0, 0, 0.06);
       }
 
       /* 主题模式分段选择器 */
@@ -5289,27 +5313,27 @@ Collaboration Guidelines:
               <span data-i18n="tutorialBtnText">${t('tutorialBtnText')}</span>
             </a>
 
-            <!-- 社区连接矩阵 (GitHub / Telegram / QQ 群 / Email) 全部移动到这里 -->
-            <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--nx-divider, rgba(255,255,255,0.1));">
-              <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+            <!-- 社区连接矩阵 (带独立可滑动滚动条) -->
+            <div class="nexus-scroll-list" style="max-height: 125px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 5px; margin-top: 4px; padding-top: 6px; padding-right: 4px; border-top: 1px dashed var(--nx-divider, rgba(255,255,255,0.1)); scrollbar-width: thin; scrollbar-color: var(--nx-primary, #3B82F6) rgba(0,0,0,0.06);">
+              <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
                 <span style="display: flex; align-items: center; gap: 6px;">
                   ${nxSvg("github", "nexus-mini-icon")} <span>GitHub Repository</span>
                 </span>
                 <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4/webagent</span>
               </a>
-              <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+              <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
                 <span style="display: flex; align-items: center; gap: 6px;">
                   ${nxSvg("telegram", "nexus-mini-icon", "color: #0088cc;")} <span data-i18n="telegramChannelTitle">${t('telegramChannelTitle')}</span>
                 </span>
                 <span style="font-size: 10px; color: #0088cc; font-family: ui-monospace, monospace;">@ysun_webai</span>
               </a>
-              <div id="nexus-copy-qq-group" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); color: var(--nx-text-primary); font-size: 11px; cursor: pointer;" title="点击复制 QQ 群号">
+              <div id="nexus-copy-qq-group" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); color: var(--nx-text-primary); font-size: 11px; cursor: pointer; flex-shrink: 0;" title="点击复制 QQ 群号">
                 <span style="display: flex; align-items: center; gap: 6px;">
                   ${nxSvg("qq", "nexus-mini-icon", "color: #1296DB;")} <span data-i18n="qqGroupTitle">${t('qqGroupTitle')}</span>
                 </span>
                 <span style="font-size: 10px; color: #1296DB; font-family: ui-monospace, monospace; display: flex; align-items: center; gap: 3px;">1131916140 (点击复制)</span>
               </div>
-              <a href="mailto:ysunyang4@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+              <a href="mailto:ysunyang4@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
                 <span style="display: flex; align-items: center; gap: 6px;">
                   ${nxSvg("mail", "nexus-mini-icon", "color: #EA4335;")} <span>Email Feedback</span>
                 </span>
