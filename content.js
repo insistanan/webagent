@@ -757,6 +757,13 @@
   // =========================================================================
   const NX_I18N = {
     "en-US": {
+      tutorialCardTitle: "Official Guide & Community",
+      tutorialCardSub: "Blog Tutorial · Community · GitHub",
+      tutorialCardDesc: "First time using WebAgent 2.0? We recommend reading the official blog tutorial to learn how to configure local Nexus MCP paths, Skills directory, and automate web AI workflows.",
+      tutorialBtnText: "📖 Read Official Blog Tutorial",
+      qqGroupTitle: "QQ Community Group",
+      qqGroupCopiedToast: "QQ group number copied: 1131916140",
+      telegramChannelTitle: "Telegram Official Channel",
       groupPathsTitle: "Language & Local Paths",
       groupPolicyTitle: "Execution & Rate Limit Policies",
       groupAdvancedTitle: "Extensions & Advanced Settings",
@@ -943,6 +950,13 @@
       pausedText: "Paused",
     },
     "zh-CN": {
+      tutorialCardTitle: "官方配置教程与社区",
+      tutorialCardSub: "图文博客教程 · 交流群组 · 开源仓库",
+      tutorialCardDesc: "初次使用建议查阅图文博客教程，了解如何配置本地 Nexus MCP 路径、Skill 技能库以及全自动化大模型调度协作模式。",
+      tutorialBtnText: "📖 阅读 WebAgent 2.0 官方博客教程",
+      qqGroupTitle: "QQ 官方技术交流群",
+      qqGroupCopiedToast: "QQ 群号已复制: 1131916140",
+      telegramChannelTitle: "Telegram 官方频道",
       groupPathsTitle: "基础语言与本地路径",
       groupPolicyTitle: "执行与频控安全策略",
       groupAdvancedTitle: "扩展工具与高级选项",
@@ -1129,6 +1143,13 @@
       pausedText: "暂停",
     },
     "ja-JP": {
+      tutorialCardTitle: "公式チュートリアル＆コミュニティ",
+      tutorialCardSub: "ブログチュートリアル · グループ · GitHub",
+      tutorialCardDesc: "初めて WebAgent 2.0 をご利用の際は、公式ブログチュートリアルをご覧いただき、ローカルNexus MCPやスキルライブラリの設定方法をご確認ください。",
+      tutorialBtnText: "📖 公式ブログチュートリアルを読む",
+      qqGroupTitle: "QQ コミュニティグループ",
+      qqGroupCopiedToast: "QQグループ番号をコピーしました: 1131916140",
+      telegramChannelTitle: "Telegram 公式チャンネル",
       groupPathsTitle: "言語とローカルパス",
       groupPolicyTitle: "実行と頻度制限ポリシー",
       groupAdvancedTitle: "拡張ツールと詳細設定",
@@ -1315,6 +1336,13 @@
       pausedText: "一時停止",
     },
     "de-DE": {
+      tutorialCardTitle: "Offizielles Tutorial & Community",
+      tutorialCardSub: "Blog-Tutorial · Gruppen · GitHub",
+      tutorialCardDesc: "Für die Ersteinrichtung von WebAgent 2.0 empfehlen wir das offizielle Blog-Tutorial, um lokale Nexus MCP-Pfade und Skill-Bibliotheken optimal zu konfigurieren.",
+      tutorialBtnText: "📖 Offizielles Blog-Tutorial lesen",
+      qqGroupTitle: "QQ Community-Gruppe",
+      qqGroupCopiedToast: "QQ-Gruppennummer kopiert: 1131916140",
+      telegramChannelTitle: "Telegram Offizieller Kanal",
       groupPathsTitle: "Sprache & Lokale Pfade",
       groupPolicyTitle: "Ausführung & Ratenbegrenzung",
       groupAdvancedTitle: "Erweiterungen & Erweitert",
@@ -3028,10 +3056,12 @@
         gap: 8px;
       }
       #nexus-view-settings {
-        max-height: 72vh;
+        max-height: 74vh;
         overflow-y: auto;
         overflow-x: hidden;
-        padding-right: 2px;
+        padding-right: 3px;
+        padding-bottom: 24px;
+        box-sizing: border-box;
       }
 
       /* 主题模式分段选择器 */
@@ -5235,14 +5265,14 @@ Collaboration Guidelines:
           <span class="nexus-status-left"><span class="nexus-status-indicator" style="background: var(--nx-text-muted);"></span><span>${t('connectingServer')}</span></span>
         </div>
 
-        <!-- 下拉板块 0：官方博客教程与入门指南 (折叠下拉框 + 圆形头像) -->
+        <!-- 下拉板块 0：官方教程与社区网络 (折叠下拉框 + 圆形头像 + 教程按钮 + 社区四项矩阵) -->
         <div class="nexus-settings-group" style="background: var(--nx-subtle-bg); border: 1px solid var(--nx-divider); border-radius: 10px; margin-bottom: 8px; overflow: hidden;">
-          <div class="nexus-adv-header" id="nexus-setgroup-tutorial-toggle" style="padding: 8px 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+          <div class="nexus-adv-header" id="nexus-setgroup-tutorial-toggle" style="padding: 9px 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <img src="${NX_AVATAR_B64}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--nx-primary); box-shadow: 0 0 5px rgba(0,0,0,0.12);" />
+              <img src="${NX_AVATAR_B64}" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--nx-primary); box-shadow: 0 0 5px rgba(0,0,0,0.15); flex-shrink: 0;" />
               <div>
-                <div style="font-size: 11px; font-weight: 700; color: var(--nx-text-primary);" data-i18n="tutorialCardTitle">${t('tutorialCardTitle')}</div>
-                <div style="font-size: 10px; color: var(--nx-text-muted);" data-i18n="tutorialCardSub">${t('tutorialCardSub')}</div>
+                <div style="font-size: 11.5px; font-weight: 700; color: var(--nx-text-primary);" data-i18n="tutorialCardTitle">${t('tutorialCardTitle')}</div>
+                <div style="font-size: 10px; color: var(--nx-text-muted); margin-top: 1px;" data-i18n="tutorialCardSub">${t('tutorialCardSub')}</div>
               </div>
             </div>
             <span class="nexus-adv-arrow open" id="nexus-setgroup-tutorial-arrow">${nxSvg("chevRight", "nexus-mini-icon")}</span>
@@ -5252,10 +5282,40 @@ Collaboration Guidelines:
             <div style="font-size: 11px; color: var(--nx-text-muted); line-height: 1.45;" data-i18n="tutorialCardDesc">
               ${t('tutorialCardDesc')}
             </div>
-            <a href="https://blog.ycu.de5.net/" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 6px; background: var(--nx-primary); color: #fff; text-decoration: none; font-size: 11px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+
+            <!-- 官方博客教程按钮 -->
+            <a href="https://blog.ycu.de5.net/" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border-radius: 6px; background: var(--nx-primary); color: #fff; text-decoration: none; font-size: 11px; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: opacity 0.2s ease;">
               ${nxSvg("book", "nexus-mini-icon", "color: #fff;")}
               <span data-i18n="tutorialBtnText">${t('tutorialBtnText')}</span>
             </a>
+
+            <!-- 社区连接矩阵 (GitHub / Telegram / QQ 群 / Email) 全部移动到这里 -->
+            <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--nx-divider, rgba(255,255,255,0.1));">
+              <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  ${nxSvg("github", "nexus-mini-icon")} <span>GitHub Repository</span>
+                </span>
+                <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4/webagent</span>
+              </a>
+              <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  ${nxSvg("telegram", "nexus-mini-icon", "color: #0088cc;")} <span data-i18n="telegramChannelTitle">${t('telegramChannelTitle')}</span>
+                </span>
+                <span style="font-size: 10px; color: #0088cc; font-family: ui-monospace, monospace;">@ysun_webai</span>
+              </a>
+              <div id="nexus-copy-qq-group" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); color: var(--nx-text-primary); font-size: 11px; cursor: pointer;" title="点击复制 QQ 群号">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  ${nxSvg("qq", "nexus-mini-icon", "color: #1296DB;")} <span data-i18n="qqGroupTitle">${t('qqGroupTitle')}</span>
+                </span>
+                <span style="font-size: 10px; color: #1296DB; font-family: ui-monospace, monospace; display: flex; align-items: center; gap: 3px;">1131916140 (点击复制)</span>
+              </div>
+              <a href="mailto:ysunyang4@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  ${nxSvg("mail", "nexus-mini-icon", "color: #EA4335;")} <span>Email Feedback</span>
+                </span>
+                <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4@gmail.com</span>
+              </a>
+            </div>
           </div>
         </div>
 
@@ -5464,42 +5524,7 @@ Collaboration Guidelines:
           </div>
         </div>
 
-        <!-- 板块 4：作者与开源社区连接 (GitHub / Telegram / QQ 群 / Email) -->
-        <div class="nexus-settings-group" style="background: var(--nx-subtle-bg); border: 1px solid var(--nx-divider); border-radius: 10px; padding: 10px; margin-bottom: 8px;">
-          <div style="font-size: 11px; font-weight: 700; color: var(--nx-text-primary); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span style="display: flex; align-items: center; gap: 5px;">
-              ${nxSvg("talk", "nexus-mini-icon", "color: var(--nx-primary);")}
-              <span>Developer & Community</span>
-            </span>
-            <span style="font-size: 10px; color: var(--nx-text-muted);">WebAgent 2.0</span>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.15); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
-              <span style="display: flex; align-items: center; gap: 6px;">
-                ${nxSvg("github", "nexus-mini-icon")} <span>GitHub Repository</span>
-              </span>
-              <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4/webagent</span>
-            </a>
-            <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.15); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
-              <span style="display: flex; align-items: center; gap: 6px;">
-                ${nxSvg("telegram", "nexus-mini-icon", "color: #0088cc;")} <span data-i18n="telegramChannelTitle">${t('telegramChannelTitle')}</span>
-              </span>
-              <span style="font-size: 10px; color: #0088cc; font-family: ui-monospace, monospace;">@ysun_webai</span>
-            </a>
-            <div id="nexus-copy-qq-group" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.15); border: 1px solid var(--nx-divider); color: var(--nx-text-primary); font-size: 11px; cursor: pointer;" title="点击复制 QQ 群号">
-              <span style="display: flex; align-items: center; gap: 6px;">
-                ${nxSvg("qq", "nexus-mini-icon", "color: #1296DB;")} <span data-i18n="qqGroupTitle">${t('qqGroupTitle')}</span>
-              </span>
-              <span style="font-size: 10px; color: #1296DB; font-family: ui-monospace, monospace; display: flex; align-items: center; gap: 3px;">1131916140 (点击复制)</span>
-            </div>
-            <a href="mailto:ysunyang4@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.15); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px;">
-              <span style="display: flex; align-items: center; gap: 6px;">
-                ${nxSvg("mail", "nexus-mini-icon", "color: #EA4335;")} <span>Email Feedback</span>
-              </span>
-              <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4@gmail.com</span>
-            </a>
-          </div>
-        </div>
+
       </div>    `;
     setSafeHTML(drawerEl, drawerHtml);
 
