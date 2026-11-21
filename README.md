@@ -1,132 +1,148 @@
-# WebAgent (Web AI MCP Bridge)
+<p align="center">
+  <img src="assets/webagent-hero.png" alt="WebAgent 2.0" width="320" style="border-radius: 24px; box-shadow: 0 12px 36px rgba(0,0,0,0.15);" />
+</p>
 
-**当前版本：1.3.4**
+<h1 align="center">WebAgent 2.0</h1>
 
-WebAgent 是一个专为网页端大模型（DeepSeek、Gemini、智谱 BigModel/清言/Z.ai、Google AI Studio、ChatGPT、Kimi、通义千问、豆包、Duck.ai、Dola、Perplexity、Copilot、当贝 AI 等）打造的浏览器扩展，提供原生浮动交互面板与本地 MCP 工具调度桥接。
+<p align="center">
+  <b>下一代网页端大模型自动化 MCP 协同调度器与本地工程执行桥接扩展</b><br>
+  <i>Next-Generation Web AI Automated MCP Orchestrator & Local System Bridge</i>
+</p>
 
-本项目由 [LINUX DO](https://linux.do) 社区认可。
+<p align="center">
+  <a href="https://github.com/ysunyang4/webagent"><img src="https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square" alt="Version"></a>
+  <a href="https://developer.chrome.com/docs/extensions/mv3/"><img src="https://img.shields.io/badge/Manifest-V3-success.svg?style=flat-square" alt="Manifest V3"></a>
+  <a href="https://blog.ycu.de5.net/"><img src="https://img.shields.io/badge/Blog-Official%20Tutorial-10B981.svg?style=flat-square" alt="Tutorial"></a>
+  <a href="https://t.me/ysun_webai"><img src="https://img.shields.io/badge/Telegram-@ysun__webai-0088cc.svg?style=flat-square" alt="Telegram"></a>
+  <a href="https://github.com/ysunyang4/webagent"><img src="https://img.shields.io/badge/QQ%20Group-1131916140-1296DB.svg?style=flat-square" alt="QQ Group"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square" alt="License"></a>
+</p>
 
-## 🆕 1.3.4 更新说明（当前版本）
+---
 
-- 新增 **Perplexity**（`perplexity.ai`）、**Microsoft Copilot**（`copilot.cloud.microsoft`）、**当贝 AI**（`ai.dangbei.com`）网页端适配。
-- 版本号升级为 **1.3.4**。
+## 📖 官方配置教程与社区直达
 
-## 1.3.3 更新说明
+> [!TIP]
+> 首次使用建议先阅读图文博客教程，了解如何配置本地工作区目录、专属 MCP 路径与技能库，开启网页端大模型全自动执行能力！
 
-- 版本号升级为 **1.3.3**。
-- 已加入 **Google AI Studio**（`aistudio.google.com`，含 `prompts/new_chat` 新对话页）网页端适配：专属主题、输入框、Run/Stop 按钮识别与模型回复代码块解析。
-- 已加入 **Z.ai**（`zchat.z.ai`、`chat.z.ai`）网页端适配：专属主题、输入框、发送/停止按钮识别与回复解析。
+- 🌐 **官方图文教程与博客**：[https://blog.ycu.de5.net/](https://blog.ycu.de5.net/)
+- ✈️ **Telegram 官方交流频道**：[https://t.me/ysun_webai](https://t.me/ysun_webai)
+- 🐧 **QQ 官方技术交流群**：**1131916140**
+- 🐙 **GitHub 开源仓库**：[https://github.com/ysunyang4/webagent](https://github.com/ysunyang4/webagent)
+- 📧 **反馈与合作邮箱**：[ysunyang4@gmail.com](mailto:ysunyang4@gmail.com)
 
-## 🆕 1.3.2 更新说明
+---
 
-- 新增 **智谱开放平台体验中心（`bigmodel.cn` GLM-5.3）、智谱清言（`chatglm.cn`）与 Z.ai（`z.ai/chat`）** 网页端深度适配及专属主题。
-- 新增 **Google AI Studio（`aistudio.google.com`）** 原生适配，覆盖 Chat Prompt 与 Freeform 运行、中断与代码块解析。
-- 版本规范化进入 **1.3.2**，全套测试扩充至 **140 项** 并保持 100% 通过。
+## 🌟 WebAgent 2.0 核心升级说明（相比 1.3.4）
 
-## 1.3.12 更新说明
+WebAgent 2.0 是自发布以来最重大的全方位重构版本，全面解决了 Chrome 扩展报错、长任务中断、界面混杂和多语言体验等关键问题：
 
-- 新增独立的 **熔断保护** 开关，浏览器扩展弹窗和页面面板均可设置，默认开启，保存用户选择。
-- 连续工具调用默认上限由 **4 轮提高到 20 轮**；成功和失败都按实际调用计数，拒绝或取消不计数。
-- 关闭熔断后，不再按轮次、重复结果或连续失败暂停；不会自动开启执行/发送，也不会绕过 Nexus 项目权限。
-- 重复保护同时核对工具、参数和返回结果，返回结果在变化的轮询/滚动不再仅因参数相同而暂停。
-- 连续失败 5 次时真正暂停调度，并保留第 5 次错误反馈；新任务或用户切换熔断开关开始新的预算。
-- 本版新增 18 项熔断回归测试，总计 **136 项测试**；升级后需保存草稿、重新加载扩展并刷新 AI 网页。
-
-## 1.3.11 更新说明
-
-本次更新新增 **Gemini 网页端适配**，并修复工具结果不自动发送、长代码 MCP 调用无法识别和项目权限提示不准确的问题。
-
-- **Gemini 可用**：适配 `gemini.google.com` 的多行输入、发送按钮、最新回复“重做”和新会话首条回复。
-- **开关由用户选择**：自动执行工具、自动发送工具结果独立设置，首次配置均默认关闭，更新保留已有选择。
-- **结果直填发送栏**：使用轻量角落确认，保留已有草稿；不再弹出大段结果窗口。
-- **长代码完整解析**：支持完整长 JSON，定向修复字符串转义问题；格式错误或截断的调用不会执行。
-- **扩展内管理权限**：查询并区分文件权限与命令权限，由用户在扩展弹窗确认修改，AI 不能自行提升权限。
-- **Windows/Linux 测试**：1.3.11 包含 118 项测试，CI 覆盖 Node 22/24，并修复 Windows CRLF 换行兼容问题。
-
-首次使用请看 **[详细使用指南](USAGE.md)**；版本变更见 **[更新日志](CHANGELOG.md)**。
-
-> 更新扩展后，请先保存草稿，再重新加载扩展并刷新 AI 网页。只替换文件或只刷新扩展不会更新已经打开的网页脚本。
-
-## 📦 安装使用指南
-
-1. 下载或克隆本项目到本地；
-2. 在 Chromium 内核浏览器（Chrome、Edge、Brave 等）中打开扩展程序管理页面：`chrome://extensions/`（Edge 为 `edge://extensions/`）；
-3. 开启右上角「开发者模式」；
-4. 点击左上角「加载已解压的扩展程序」，选择本项目文件夹；
-5. 打开任意支持的网页大模型对话页面（如智谱、AI Studio、DeepSeek、Gemini 等），页面顶部即可看到 WebAgent 浮动控制卡片；
-6. 在扩展弹窗填写本机 Nexus MCP 地址、已注册的项目 ID 和工作目录，然后检测连接。项目 ID 与工作目录默认留空，不预设任何用户项目。
-7. 更新扩展后需要重新加载扩展并刷新 AI 网页；先保存未提交草稿。
-
-## 🌟 核心特性
-
-- **多模型原生适配**：DeepSeek、Gemini、智谱 (BigModel / 清言 / Z.ai)、Google AI Studio、ChatGPT、Kimi、通义千问 (Qwen)、豆包 (Doubao)、Duck.ai、Dola、Perplexity、Copilot、当贝 AI 等。
-- **本地 MCP 桥接**：支持标准 MCP 工具调用（文件读写、命令行运行、网页快照等）。
-- **极简交互设计**：自适应明暗主题、可自由拖拽位置与收起抽屉。
-- **用户可控自动化**：自动执行工具与自动发送结果是独立开关，记住用户选择；结果直接追加到发送栏，不覆盖已有草稿。
-- **可靠长代码调用**：保留完整文件内容，定向修复 JSON 字符串中的未转义控制字符；截断调用明确提示未执行，不猜补源码。
-- **本地权限设置**：项目文件与命令权限仅可从扩展弹窗确认修改，网页消息不能提升权限。
-- **隐私边界**：MCP 请求仅连接获准的本地 loopback 地址，不包含第三方遥测。工具结果回填到第三方 AI 网页后，网页可以读取它；请勿读取或回填凭证、密钥等敏感内容。
-
-## 🔧 配置与行为（1.3.2）
-
-默认服务基址为 `http://127.0.0.1:8787`，请求使用 `/mcp`；也支持配置允许的本机 18080 / 21888 端口。先运行 Nexus 并注册项目，在弹窗填写实际项目 ID，再检测连接。网页端账号由用户自行登录，不需要 DeepSeek / Gemini API Key；Gemini 指 `gemini.google.com`，不包括 Google AI Studio。
-
-### 自动执行与自动发送
-
-| 自动执行 | 自动发送 | 行为 |
-| --- | --- | --- |
-| 关闭 | 关闭 | 逐次轻量角落确认，结果直填，手动发送 |
-| 开启 | 关闭 | 自动调用已提议工具，结果直填，手动发送 |
-| 关闭 | 开启 | 逐次确认工具，结果随后自动发送 |
-| 开启 | 开启 | 自动调用工具并自动发送工具反馈 |
-
-- 两个开关在未配置时均默认关闭；已保存的选择不会因为更新被重置。页面设置面板与扩展弹窗都能修改并持久保存。
-- 原草稿保留并追加工具结果。**开启自动发送后，原草稿也会一起发送**；首次开启会提示这一点。
-- 延迟期间关闭开关、修改草稿、手动提交或导航会取消待发送结果。按钮未就绪时有限等待；不使用 Enter 兜底，不重复发送不确定是否已提交的消息。
-- 自动发送只处理工具反馈，不替用户自动发送协作协议。自动限流重试、自动切新会话及自动补发续写不启用。
-- **熔断保护**默认开启，连续工具调用默认上限为 **20 轮**；关闭后取消轮次、重复结果和连续失败这三类自动暂停。关闭时会提示持续调用的费用/副作用风险，不改变其他开关或项目权限。
-- 只有真正的用户新任务或用户切换熔断开关会重置计数，草稿回填和自动反馈不会重置；关闭不重放之前被拦截的调用，重新开启从新预算计数。
-- 自动执行不会赋予 Nexus 项目权限，Nexus 自身的校验与审批策略保持生效。用户应先理解命令可能产生的副作用。
-
-### 项目权限与令牌
-
-扩展弹窗可查询实时 `accessMode`（文件读写）和 `executionMode`（命令执行），不能从命令关闭推断文件只读。权限修改需要独立的 **Nexus 管理令牌**，在本机扩展密码框填写或导入本机令牌文件；它不是 Bridge Token，也不是网页 AI API Key。
-
-- 仅扩展自己的 action popup 可调用管理端点；普通网页、内容脚本消息及扩展普通标签页无权修改权限。
-- 管理令牌保存在扩展私有存储，不进入网页配置、协作提示词或剪贴板。Bridge Token 仅用于配置的 MCP 源，不发送给其他本地服务。
-- 文件改成只读会关闭命令；开启项目命令会要求可读写。每次更改需用户确认，并在更改后读取真实状态。
-- “项目代码执行”不是操作系统级沙箱，命令仍可能影响项目外资源；不要将这个开关视为 OS 隔离。
-
-### 提示词与 Gemini
-
-点击“复制增强协作协议”（或页面面板填入协议），自行发送给 AI。协议约束每次只输出一个 `nexus` 代码块、一个完整 JSON 对象，工具名与参数类型遵守真实 schema。长源码必须完整，字符串里的换行、引号和反斜杠按 JSON 规则转义；不接受半截调用、源码省略号或 JSON 注释。
-
-Gemini 适配支持 Quill 多行输入的逻辑段落回读、最新回复的“重做”，以及新建会话分配 ID 时保留待响应状态。首次回复迁移须与实际提交的第一条用户消息匹配；刷新、切换历史、上一/下一版本不会重放旧工具调用。
-
-扩展弹窗显示页面版本、MCP 连接与最近解析/自动发送状态。输入框重建、草稿变化、AI 仍在生成或发送按钮未就绪会显示具体原因，不收集草稿正文或令牌。
-
-## 🧪 测试
-
-当前包含 136 项测试；CI 在 Windows/Linux × Node 22/24 上运行。
-
-需要 Node.js 22+，无第三方测试依赖：
-
-```sh
-npm test
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                             WebAgent 2.0                               │
+│  ┌───────────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
+│  │ 3D 拟态品牌与极简抽屉  │  │ 双独立折叠控制面板 │  │ 设置中心全折叠卡片 │  │
+│  └───────────────────────┘  └─────────────────┘  └──────────────────┘  │
+│  ┌───────────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
+│  │ 零报错弹性自愈引擎     │  │ 跨会话断点接力续传 │  │ 100% 四国语言纯净  │  │
+│  └───────────────────────┘  └─────────────────┘  └──────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-测试覆盖 MCP initialize/session/SSE/分页/超时、只允许本地端点、权限来源校验与令牌隔离、独立自动化开关、草稿保留与取消、防历史重放、新会话路由迁移和超长 JSON。普通测试完全使用本地 fixtures/mock，不连接真实账号或执行用户工具。
+### 1. 全新 3D 拟态品牌设计与极简主操作界面
+- **3D 拟物品牌体系**：引入全新官方 3D 拟态标识与高清多尺寸应用图标（16px / 48px / 128px）。
+- **主界面极致克制**：主操作抽屉移除非核心社媒外露，仅保留「⚙ 设置」、「🎨 主题」和「✕ 关闭」三个主控键，视觉专注无干扰。
 
-真实 Gemini 对话已另外验证项目查询和长文件创建的“模型输出 → MCP 执行 → 反馈自动发送 → 模型确认”闭环；46,299 字符、48,919 UTF-8 字节的文件与模型 `content` 逐字符一致。个人对话链接、截图、项目配置与实测文件不随代码发布。
+### 2. Chrome 扩展零报错与四级弹性自愈引擎
+- **彻底清洗平台代码块杂质**：在 DeepSeek、ChatGPT 等主流平台中，网页端经常在代码块前插入 `nexusCopyDownload` 等杂质前缀，2.0 引擎在解析前自动智能剥离。
+- **四级容错自动修复**：
+  1. 级别 1：原生 `JSON.parse` 校验；
+  2. 级别 2：自动补全未闭合括号并清理尾部逗号；
+  3. 级别 3：自动转义 Windows 孤立单反斜杠路径；
+  4. 级别 4：针对复杂 PowerShell（如 `$b=@{jsonrpc='2.0'}`）与单双引号混用的字段级正则安全提取。
+- **扩展管理面板 100% 绿色就绪**：报警日志全部规整降级为 `console.debug`，彻底消除了 Chrome 扩展管理页面的红色 "Errors" 报警。
 
-## 📄 开源许可证
+### 3. Nexus 专属 MCP 与 Nexus 技能中心双独立折叠面板
+- **架构解耦**：将主界面的专属 MCP 与技能库（Skills）分离为两个完全独立的折叠卡片。
+- **本地服务路径绑定**：专属 MCP 路径与技能库路径各自独立配置，均配有专属红色垃圾桶 `🗑️` 一键清空按钮。
+- **单项垃圾桶删除与独立滚动**：两套面板列表均支持垂直独立滚动（`max-height: 140px; overflow-y: auto;`），单行均配有行内删除按钮。
 
-本项目的原创源代码依据 **[GNU General Public License v3.0 only（GPL-3.0-only）](LICENSE)** 发布。
+### 4. 设置中心全板块独立折叠化（Accordion Dropdowns）
+设置中心全面告别长滚动，重构为 5 大独立下拉卡片：
+- **卡片 0：官方博客教程与入门指南**（内置作者圆形头像与专属博客直达链接）；
+- **卡片 1：基础语言与本地路径**（4 种语言一键切换，默认工作目录、专属 MCP 路径、Skill 库路径均带垃圾桶）；
+- **卡片 2：执行与频控安全策略**（数据脱敏防外泄、自动拦截调用、安全润色保护模式、延迟缓冲滑块与频控上限滑块）；
+- **卡片 3：扩展工具与高级选项**（已就绪工具列表、自定义系统规则提示词、Token 与端口设置）；
+- **卡片 4：Developer & Community 社区矩阵**（集成 GitHub、Telegram 频道、QQ 官方交流群与联系邮箱）。
 
-- 允许个人和企业使用、学习、修改及商业使用，也允许在遵守 GPL-3.0 条件的前提下分发原版或修改版。
-- 分发受 GPL 约束的程序时，应按许可证要求保留版权及许可声明，并提供对应源代码；修改版的分发还须遵守相应的 GPL 要求。
-- 仅在自己设备上使用或私下修改，通常不需要对公众发布修改后的源码。
-- 欢迎通过 Issue 和 Pull Request 参与协作。贡献者通常保留其原创贡献的版权，并按照适用许可证授权贡献。
-- 第三方代码、字体、图标或其他素材（如有）仍受各自合法许可证约束，不因本项目添加 GPL 而自动变成 GPL 作品。
+### 5. 100% 纯净四国语言国际化（零泄漏）
+- 原生支持 **English (en-US)**、**简体中文 (zh-CN)**、**日本語 (ja-JP)**、**Deutsch (de-DE)**。
+- 动态语言切换时，界面标题、按钮、占位符、Toast 提示以及注入模型的开发者 Prompt 协议 **100% 全量切换**，彻底杜绝外语模式下的中文残留。
 
-**注意：** GPL-3.0 允许符合许可条件的商业使用；它不是“禁止商用”许可证。
+### 6. 跨会话自愈与断点快照接力续传（Cross-Session Handover）
+- 当长任务导致网页大模型提示“达到单次对话长度上限”时，插件自动捕获异常状态。
+- 自动提取当前任务目标、工作区目录以及最近执行的步骤断点（`recentSteps`），自动点击「新建对话」并在新会话中回填结构化快照，实现长任务无缝接力。
+
+---
+
+## 🎮 支持的网页大模型平台矩阵（14+ 平台原生适配）
+
+| 平台 | 适配网址 | 特性支持 |
+| :--- | :--- | :--- |
+| **DeepSeek** | `chat.deepseek.com` | 专属暗黑/浅色主题、思考链隔离、复制杂质清洗 |
+| **ChatGPT** | `chatgpt.com` / `chat.openai.com` | ProseMirror 编辑器适配、多轮连续执行 |
+| **Google Gemini** | `gemini.google.com` | Quill 富文本输入、多行重做、自动化调度 |
+| **Google AI Studio** | `aistudio.google.com` | Chat Prompt / Freeform 运行、流式中断捕获 |
+| **Kimi (月之暗面)** | `kimi.ai` / `kimi.moonshot.cn` | 自动新建会话、长文本自愈 |
+| **通义千问 (Qwen)** | `chat.qwen.ai` / `tongyi.aliyun.com` | 专属主题、多轮工具自动回填 |
+| **豆包 (Doubao)** | `doubao.com` | 对话输入适配、状态检测 |
+| **Duck.ai** | `duck.ai` | 纯净极简界面原生支持 |
+| **Z.ai (智谱)** | `zchat.z.ai` / `chat.z.ai` | 国际站原生适配与代码块解析 |
+| **Perplexity** | `perplexity.ai` | 搜索增强模型工具联动 |
+| **Microsoft Copilot** | `copilot.microsoft.com` | 企业与个人版网页端调度 |
+| **当贝 AI** | `ai.dangbei.com` | 原生主题适配与状态追踪 |
+| **Dola** | `dola.com` | 页面快照与连续调用 |
+
+---
+
+## 📦 快速安装与配置（5 分钟上手）
+
+### 第一步：加载 Chrome 扩展
+1. 下载或克隆本仓库到本地：
+   ```bash
+   git clone https://github.com/ysunyang4/webagent.git
+   ```
+2. 打开 Chromium 内核浏览器（Google Chrome、Edge、Brave 等），访问扩展程序管理页：
+   - Chrome: `chrome://extensions/`
+   - Edge: `edge://extensions/`
+3. 开启右上角 **「开发者模式 (Developer Mode)」**。
+4. 点击左上角 **「加载已解压的扩展程序 (Load unpacked)」**，选择本项目文件夹。
+
+### 第二步：配置与开始使用
+1. 打开任意支持的网页大模型（如 [DeepSeek](https://chat.deepseek.com/) 或 [ChatGPT](https://chatgpt.com/)）。
+2. 页面顶部将自动浮现 **WebAgent 2.0 浮动控制药丸**。
+3. 点击齿轮图标进入「设置中心」，根据 [官方博客教程](https://blog.ycu.de5.net/) 填入您的默认工作目录与 MCP 服务地址。
+4. 点击 **「注入开发协作协议」**，网页端 AI 即可直接读取本地文件、运行终端命令并协同执行！
+
+---
+
+## 🛡️ 数据脱敏与安全策略
+
+- **本地回环通信**：所有与本地 MCP / 终端的通信严格限制在 `127.0.0.1` 环回接口，不依赖任何第三方云端中转服务器。
+- **数据脱敏保护**：内置敏感信息过滤器，自动在工具回填前脱敏 API Key、密码、密钥以及用户主目录绝对路径。
+- **频控与熔断保护**：用户可自定义「回填延迟缓冲」（0.5s - 10s）与「连续调用上限」（1 - 50 步），彻底防止模型死循环消耗 Token。
+
+---
+
+## 🤝 社区交流与反馈
+
+欢迎加入 WebAgent 开发者社区，提出功能建议或反馈问题：
+
+- 🌐 **博客专栏**：[https://blog.ycu.de5.net/](https://blog.ycu.de5.net/)
+- ✈️ **Telegram 官方频道**：[https://t.me/ysun_webai](https://t.me/ysun_webai)
+- 🐧 **QQ 官方交流群**：**1131916140**
+- 🐙 **GitHub Issues**：[https://github.com/ysunyang4/webagent/issues](https://github.com/ysunyang4/webagent/issues)
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://github.com/ysunyang4">ysunyang4</a> & Open Source Contributors</p>

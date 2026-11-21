@@ -1,8 +1,15 @@
-// WebAgent 1.3.4 Extension - Background Service Worker
+// WebAgent 2.0 Extension - Background Service Worker
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('[WebAgent 1.3.4 Extension] Service Worker 启动并就绪');
+  console.log('[WebAgent 2.0 Extension] Service Worker 启动并就绪');
   chrome.action.setBadgeText({ text: 'ON' });
   chrome.action.setBadgeBackgroundColor({ color: '#10b981' });
+});
+
+// 点击工具栏扩展图标时，直接向当前活动标签页发指令唤起/切换网页悬浮药丸面板
+chrome.action.onClicked.addListener((tab) => {
+  if (tab && tab.id) {
+    chrome.tabs.sendMessage(tab.id, { action: 'NX_TOGGLE_PANEL' }).catch(() => {});
+  }
 });
 
 // 后台代理网络请求，彻底绕过网页端 CSP 与跨域限制

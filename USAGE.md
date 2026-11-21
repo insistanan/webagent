@@ -1,4 +1,6 @@
-# WebAgent 1.3.2 使用指南
+# WebAgent 2.0 使用指南
+
+> 💡 **最新图文配置教程**：推荐访问 [WebAgent 2.0 官方博客配置教程](https://blog.ycu.de5.net/) 了解如何快速配置本地 Nexus MCP 与 Skill 技能库！
 
 WebAgent 将网页 AI 提议的工具调用转交给本机 Nexus MCP，再把真实结果回填到 AI 对话发送栏。它不是 DeepSeek/Gemini API 客户端，也不能在未运行 Nexus 的情况下单独访问本机文件。
 

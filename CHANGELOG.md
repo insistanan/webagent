@@ -1,5 +1,25 @@
 # 更新日志
 
+## 2.0.0 — 2026-11-21 (重大版本里程碑)
+- **全新 3D 拟物品牌与视觉升级**：
+  - 引入全新 3D 拟态 WebAgent 官方专属 Hero 标识与高清应用图标（16x16 / 48x48 / 128x128）。
+  - 主操作抽屉极致精简化，移除非必要社媒堆叠，保持核心功能一目了然。
+- **设置中心全板块独立折叠化（Accordion Layout）**：
+  - 新增 **官方博客教程与入门指南** 下拉卡片，内置作者圆形头像与专属教程直达链接（[https://blog.ycu.de5.net/](https://blog.ycu.de5.net/)）。
+  - 板块 1「语言与本地路径」、板块 2「执行与频控策略」、板块 3「扩展工具与高级选项」全面支持独立展开/折叠，配备平滑动画。
+- **Nexus 专属 MCP 与 Nexus 技能中心双独立折叠面板**：
+  - 主界面彻底分离专属 MCP 与技能库（Skills），配备独立路径绑定、一键垃圾桶清空、垂直独立滚动列表与单项行内删除。
+- **Chrome 扩展零报错与弹性自愈引擎**：
+  - 彻底清洗 DeepSeek、ChatGPT 等平台代码块前缀杂质（如 `nexusCopyDownload`）。
+  - 四级容错引擎自动自愈 Windows 单反斜杠路径与 PowerShell 嵌套哈希表语法，Chrome 扩展管理面板始终保持 100% 绿色就绪。
+- **100% 纯净四国语言国际化（零泄漏）**：
+  - 完整覆盖 English、简体中文、日本語、Deutsch 四种语言。切换语言时所有界面文本、占位符、Toast 提示及 Prompt 协议全量动态更新，零中文残留。
+- **官方社群与交流矩阵全面接入**：
+  - 官方技术交流 Telegram 频道：[https://t.me/ysun_webai](https://t.me/ysun_webai)
+  - QQ 官方交流群：`1131916140`（支持设置中心一键复制）
+  - 官方博客教程：[https://blog.ycu.de5.net/](https://blog.ycu.de5.net/)
+  - 官方 GitHub 仓库：[https://github.com/ysunyang4/webagent](https://github.com/ysunyang4/webagent)
+
 ## 1.3.4 — 2026-11-16
 
 - 新增 **Perplexity（perplexity.ai）**、**Microsoft Copilot（copilot.cloud.microsoft / copilot.microsoft.com）**、**当贝 AI（ai.dangbei.com）** 网页端适配：专属主题、输入框、发送/停止按钮识别、回复解析与新建对话。
