@@ -3078,14 +3078,62 @@
         gap: 8px;
       }
       #nexus-view-settings {
-        max-height: min(72vh, 580px);
+        max-height: min(74vh, 560px);
         overflow-y: auto !important;
-        overflow-x: hidden;
-        padding-right: 5px;
-        padding-bottom: 38px;
+        overflow-x: hidden !important;
+        padding-right: 6px;
+        padding-bottom: 26px;
         box-sizing: border-box;
         scrollbar-width: thin;
         scrollbar-color: var(--nx-primary, #3B82F6) rgba(0, 0, 0, 0.06);
+      }
+      .nexus-settings-group {
+        background: var(--nx-subtle-bg, rgba(255, 255, 255, 0.06));
+        border: 1px solid var(--nx-divider, rgba(148, 163, 184, 0.16));
+        border-radius: 10px;
+        margin-bottom: 8px;
+        overflow: hidden;
+        flex-shrink: 0 !important;
+        width: 100%;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, background 0.2s ease;
+      }
+      .nexus-comm-card {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.12);
+        border: 1px solid var(--nx-divider, rgba(148, 163, 184, 0.16));
+        text-decoration: none;
+        color: var(--nx-text-primary, #F8FAFC);
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.15s ease, border-color 0.18s ease;
+        box-sizing: border-box;
+        flex-shrink: 0;
+      }
+      .nexus-comm-card:hover {
+        background: rgba(0, 0, 0, 0.22);
+        border-color: var(--nx-primary, #3B82F6);
+        transform: translateY(-1px);
+      }
+      .nexus-comm-card-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--nx-text-primary, #F8FAFC);
+      }
+      .nexus-comm-card-sub {
+        font-size: 9.5px;
+        color: var(--nx-text-muted, #94A3B8);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* 主题模式分段选择器 */
@@ -5313,31 +5361,41 @@ Collaboration Guidelines:
               <span data-i18n="tutorialBtnText">${t('tutorialBtnText')}</span>
             </a>
 
-            <!-- 社区连接矩阵 (带独立可滑动滚动条) -->
-            <div class="nexus-scroll-list" style="max-height: 125px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 5px; margin-top: 4px; padding-top: 6px; padding-right: 4px; border-top: 1px dashed var(--nx-divider, rgba(255,255,255,0.1)); scrollbar-width: thin; scrollbar-color: var(--nx-primary, #3B82F6) rgba(0,0,0,0.06);">
-              <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
-                <span style="display: flex; align-items: center; gap: 6px;">
-                  ${nxSvg("github", "nexus-mini-icon")} <span>GitHub Repository</span>
-                </span>
-                <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4/webagent</span>
+            <!-- 2x2 社区直达矩阵 (GitHub / Telegram / QQ群 / Email 全部平铺直现，绝不截断，告别繁琐嵌套滚动条) -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--nx-divider, rgba(255,255,255,0.1));">
+              <!-- 1. GitHub -->
+              <a href="https://github.com/ysunyang4/webagent" target="_blank" rel="noopener noreferrer" class="nexus-comm-card" title="GitHub: https://github.com/ysunyang4/webagent">
+                <div class="nexus-comm-card-title">
+                  ${nxSvg("github", "nexus-mini-icon")} <span>GitHub</span>
+                </div>
+                <div class="nexus-comm-card-sub">ysunyang4/webagent</div>
               </a>
-              <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
-                <span style="display: flex; align-items: center; gap: 6px;">
-                  ${nxSvg("telegram", "nexus-mini-icon", "color: #0088cc;")} <span data-i18n="telegramChannelTitle">${t('telegramChannelTitle')}</span>
-                </span>
-                <span style="font-size: 10px; color: #0088cc; font-family: ui-monospace, monospace;">@ysun_webai</span>
+
+              <!-- 2. Telegram -->
+              <a href="https://t.me/ysun_webai" target="_blank" rel="noopener noreferrer" class="nexus-comm-card" title="Telegram: https://t.me/ysun_webai">
+                <div class="nexus-comm-card-title">
+                  ${nxSvg("telegram", "nexus-mini-icon", "color: #0088cc;")} <span>Telegram</span>
+                </div>
+                <div class="nexus-comm-card-sub" style="color: #0088cc;">@ysun_webai</div>
               </a>
-              <div id="nexus-copy-qq-group" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); color: var(--nx-text-primary); font-size: 11px; cursor: pointer; flex-shrink: 0;" title="点击复制 QQ 群号">
-                <span style="display: flex; align-items: center; gap: 6px;">
+
+              <!-- 3. QQ 群 (一键点击复制) -->
+              <div id="nexus-copy-qq-group" class="nexus-comm-card" title="点击复制 QQ 群号 1131916140">
+                <div class="nexus-comm-card-title">
                   ${nxSvg("qq", "nexus-mini-icon", "color: #1296DB;")} <span data-i18n="qqGroupTitle">${t('qqGroupTitle')}</span>
-                </span>
-                <span style="font-size: 10px; color: #1296DB; font-family: ui-monospace, monospace; display: flex; align-items: center; gap: 3px;">1131916140 (点击复制)</span>
+                </div>
+                <div class="nexus-comm-card-sub" style="color: #1296DB; display: flex; align-items: center; justify-content: space-between;">
+                  <span>1131916140</span>
+                  <span style="font-size: 8.5px; opacity: 0.85;">(复制)</span>
+                </div>
               </div>
-              <a href="mailto:ysunyang4@gmail.com" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 8px; border-radius: 6px; background: rgba(0,0,0,0.12); border: 1px solid var(--nx-divider); text-decoration: none; color: var(--nx-text-primary); font-size: 11px; flex-shrink: 0;">
-                <span style="display: flex; align-items: center; gap: 6px;">
-                  ${nxSvg("mail", "nexus-mini-icon", "color: #EA4335;")} <span>Email Feedback</span>
-                </span>
-                <span style="font-size: 10px; color: var(--nx-text-muted); font-family: ui-monospace, monospace;">ysunyang4@gmail.com</span>
+
+              <!-- 4. Email 反馈 -->
+              <a href="mailto:ysunyang4@gmail.com" class="nexus-comm-card" title="Email: ysunyang4@gmail.com">
+                <div class="nexus-comm-card-title">
+                  ${nxSvg("mail", "nexus-mini-icon", "color: #EA4335;")} <span>Email</span>
+                </div>
+                <div class="nexus-comm-card-sub">ysunyang4@gmail.com</div>
               </a>
             </div>
           </div>
@@ -5411,10 +5469,10 @@ Collaboration Guidelines:
               ${nxSvg("shield", "nexus-mini-icon", "color: #10B981;")}
               <span data-i18n="groupPolicyTitle">${t('groupPolicyTitle')}</span>
             </div>
-            <span class="nexus-adv-arrow open" id="nexus-setgroup-policy-arrow">${nxSvg("chevRight", "nexus-mini-icon")}</span>
+            <span class="nexus-adv-arrow" id="nexus-setgroup-policy-arrow">${nxSvg("chevRight", "nexus-mini-icon")}</span>
           </div>
 
-          <div class="nexus-adv-body" id="nexus-setgroup-policy-body" style="display: flex; flex-direction: column; padding: 0 10px 10px 10px; gap: 6px;">
+          <div class="nexus-adv-body" id="nexus-setgroup-policy-body" style="display: none; flex-direction: column; padding: 0 10px 10px 10px; gap: 6px;">
             <!-- 数据脱敏 -->
             <div class="nexus-switch-row">
               <span class="nexus-label" id="nexus-lbl-desens" style="font-size: 11px; color: var(--nx-text-primary); display: inline-flex; align-items: center;">
