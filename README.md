@@ -69,7 +69,7 @@ WebAgent 2.0 is a complete architectural overhaul delivering unmatched stability
 - ✈️ **Telegram Community Channel**: [https://t.me/ysun_webai](https://t.me/ysun_webai)
 - 🐧 **QQ Community Group**: **1131916140**
 - 🐙 **GitHub Repository**: [https://github.com/ysunyang4/webagent](https://github.com/ysunyang4/webagent)
-- ✉️ **Author & Commercial Inquiries**: `ysunyang979@gmail.com`
+- ✉️ **Author & Commercial Inquiries**: `ysunyang4@gmail.com`
 
 ---
 
@@ -131,7 +131,7 @@ git clone https://github.com/ysunyang4/webagent.git
 If **WebAgent** has enhanced your daily AI workflow or boosted your productivity, consider buying the author a coffee ☕! Donations are completely voluntary and do not grant any extra features, proprietary services, or priority support.
 
 > 💼 **Enterprise Sponsorship & Commercial Licensing**  
-> For enterprise sponsorship, custom agent integrations, or commercial licensing inquiries (dual-licensing exempt from GPL-3.0 copyleft obligations), feel free to reach out via [GitHub Issues](https://github.com/ysunyang4/webagent/issues) or email: `ysunyang979@gmail.com`.
+> For enterprise sponsorship, custom agent integrations, or commercial licensing inquiries (dual-licensing exempt from GPL-3.0 copyleft obligations), feel free to reach out via [GitHub Issues](https://github.com/ysunyang4/webagent/issues) or email: `ysunyang4@gmail.com`.
 
 <div align="center">
   <table>

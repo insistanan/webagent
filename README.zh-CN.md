@@ -69,7 +69,7 @@ WebAgent 2.0 经历了全面的底层架构重构，带来极高稳定性与全�
 - ✈️ **Telegram 官方社区频道**：[https://t.me/ysun_webai](https://t.me/ysun_webai)
 - 🐧 **QQ 官方开发者交流群**：**1131916140**
 - 🐙 **GitHub 开源仓库**：[https://github.com/ysunyang4/webagent](https://github.com/ysunyang4/webagent)
-- ✉️ **作者联系与商业咨询**：`ysunyang979@gmail.com`
+- ✉️ **作者联系与商业咨询**：`ysunyang4@gmail.com`
 
 ---
 
@@ -131,7 +131,7 @@ git clone https://github.com/ysunyang4/webagent.git
 如果 **WebAgent** 对您的日常工作流或开发效率有所帮助，欢迎自愿赞助支持本项目的持续开源维护 ☕！所有赞助均为自愿行为，不附带任何额外功能、专属服务或优先支持特权。
 
 > 💼 **企业赞助与商业授权 (Enterprise & Licensing)**  
-> 如需企业级赞助、定制智能体集成，或商业闭源授权（豁免 GPL-3.0 开源传染义务的商业双重许可），欢迎通过 [GitHub Issues](https://github.com/ysunyang4/webagent/issues) 或邮件联系：`ysunyang979@gmail.com`。
+> 如需企业级赞助、定制智能体集成，或商业闭源授权（豁免 GPL-3.0 开源传染义务的商业双重许可），欢迎通过 [GitHub Issues](https://github.com/ysunyang4/webagent/issues) 或邮件联系：`ysunyang4@gmail.com`。
 
 <div align="center">
   <table>
