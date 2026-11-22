@@ -1,0 +1,9 @@
+# WebAgent Code Owners & Sponsor Asset Protection
+# Only @ysunyang4 has authorization to approve modifications to documentation, sponsor channels, and security assets.
+* @ysunyang4
+
+README.md @ysunyang4
+README.zh-CN.md @ysunyang4
+assets/*pay* @ysunyang4
+.github/CODEOWNERS @ysunyang4
+.github/workflows/sponsor-integrity.yml @ysunyang4
