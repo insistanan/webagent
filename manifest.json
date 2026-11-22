@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "WebAgent 2.0 (Web AI MCP Orchestrator)",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "WebAgent 2.0 专用浏览器扩展，无缝将 DeepSeek / ChatGPT / Kimi / 豆包 / 通义千问 (Qwen) / Duck.ai / Dola / Gemini / AI Studio / Z.ai / Perplexity / Copilot / 当贝 AI 等主流网页端连接至本地智能体核心与 MCP 桥接。支持双独立折叠面板、全自动化执行、智能上下文自愈与多语言国际化。",
   "permissions": [
     "storage",
@@ -47,7 +47,8 @@
     "https://ai.dangbei.com/*",
     "https://*.dangbei.com/*",
     "http://127.0.0.1:*/*",
-    "http://localhost:*/*"
+    "http://localhost:*/*",
+    "https://nexus.358966.xyz/*"
   ],
   "background": {
     "service_worker": "background.js"

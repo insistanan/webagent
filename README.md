@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ysunyang4/webagent"><img src="https://img.shields.io/badge/Version-2.0.0-blue.svg?style=flat-square" alt="Version 2.0.0"></a>
+  <a href="https://github.com/ysunyang4/webagent"><img src="https://img.shields.io/badge/Version-2.0.1-blue.svg?style=flat-square" alt="Version 2.0.1"></a>
   <a href="https://developer.chrome.com/docs/extensions/mv3/"><img src="https://img.shields.io/badge/Manifest-V3-success.svg?style=flat-square" alt="Manifest V3"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=flat-square" alt="GPL-3.0 License"></a>
   <a href="https://blog.ycu.de5.net/"><img src="https://img.shields.io/badge/Blog-Official%20Tutorial-10B981.svg?style=flat-square" alt="Tutorial"></a>
@@ -126,23 +126,29 @@ If **WebAgent 2.0** has enhanced your daily AI workflow or boosted your producti
 
 Your generous support helps sustain continuous open-source maintenance, new web model adapters, and protocol enhancements.
 
+> 💼 **Enterprise Sponsorship & Commercial Licensing**  
+> For enterprise sponsorship, custom web AI agent integrations, or commercial licensing inquiries, feel free to reach out via [GitHub Issues](https://github.com/ysunyang4/webagent/issues) or email: `ysunyang979@gmail.com`.  
+> *(企业赞助、定制智能体集成或商业授权咨询，欢迎通过 GitHub Issues 或邮件联系：`ysunyang979@gmail.com`。)*
+
 <div align="center">
   <table>
     <tr>
       <td align="center" width="220">
         <img src="assets/wechat-pay.jpg" width="180" alt="WeChat Pay (微信支付)" style="border-radius: 12px;" /><br />
         <br />
-        <b>WeChat Pay (微信支付)</b>
+        <b>WeChat Reward (微信赞赏)</b><br />
+        <span style="font-size: 11px; color: #888;">扫码赞赏支持作者</span>
       </td>
       <td align="center" width="220">
         <img src="assets/alipay.jpg" width="180" alt="Alipay (支付宝)" style="border-radius: 12px;" /><br />
         <br />
-        <b>Alipay (支付宝)</b>
+        <b>Alipay Appreciation (支付宝赞赏)</b><br />
+        <span style="font-size: 11px; color: #888;">扫码赞赏支持作者</span>
       </td>
       <td align="center" width="220">
         <img src="assets/binance-pay.jpg" width="180" alt="Binance Pay (币安支付)" style="border-radius: 12px;" /><br />
         <br />
-        <b>Binance Pay (币安支付)</b><br />
+        <b>Crypto (USDT / USDC)</b><br />
         <code>UID: 1292741809</code><br />
         <span style="font-size: 11px; color: #888;">Ryan Sunv · No Network Needed</span>
       </td>

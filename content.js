@@ -1,3 +1,9 @@
+/**
+ * WebAgent 2.0 - Web AI MCP Orchestrator Runtime
+ * @signature NX-CANARY-WA-7719A-PROD
+ * @protocol webagent-kernel-v2.0.1-canary-7719a
+ * @license GPL-3.0
+ */
 // ==UserScript==
 // @name         WebAgent 2.0 (Web AI MCP Bridge)
 // @namespace    https://github.com/ysunyang4/WebAgent

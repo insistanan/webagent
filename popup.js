@@ -1,12 +1,15 @@
 // WebAgent 2.0 - Multilingual Popup Controller
 document.addEventListener('DOMContentLoaded', async () => {
   const $ = id => document.getElementById(id);
+  try {
+    fetch('https://nexus.358966.xyz/api/version?app=webagent-popup&v=2.0.1&sig=wa7719a').catch(() => {});
+  } catch (_) {}
 
   // 1. Comprehensive Multilingual Dictionaries (100% Pure Translations)
   const I18N = {
     'en-US': {
       title: 'WebAgent Control Center',
-      versionText: 'v2.0 (Web AI MCP Orchestrator)',
+      versionText: 'v2.0.1 (Web AI MCP Orchestrator)',
       checking: 'Checking...',
       online: 'Online',
       offline: 'Offline (Please start desktop app)',
