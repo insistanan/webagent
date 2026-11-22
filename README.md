@@ -164,7 +164,7 @@ If **WebAgent** has enhanced your daily AI workflow or boosted your productivity
 | Channel | Details | Verification Method |
 | :--- | :--- | :--- |
 | **Crypto (USDT / USDC)** | **UID: `1292741809`** · Name: **Ryan Sunv** | Direct internal transfer via Binance Pay |
-| **Crypto (USDT, on-chain)** | **Address: `TPRrDW8DGsrDmcnWvanTbFz7XEJuywu21i`** · Network: **TRON (TRC-20)** | Any wallet or exchange with TRC-20 withdrawal; **wrong network = lost funds** |
+| **Crypto (USDT, on-chain)** | **Address: `TPRrDW8DGsrDmcnWvanTbFz7XEJuywu21i`** · Network: **TRON (TRC-20)** | From any wallet or exchange — just select the **TRON (TRC-20)** network when sending |
 | **WeChat Reward** | Official WeChat Reward QR code | Scan only from the official image above |
 | **Alipay Appreciation** | Official Alipay Appreciation QR code | Scan only from the official image above |
 
